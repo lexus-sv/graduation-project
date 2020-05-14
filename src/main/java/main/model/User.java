@@ -20,13 +20,18 @@ public class User {
     @Temporal(value = TemporalType.TIMESTAMP)
     @Column(nullable = false)
     private Date registrationDate;
+
     @Column(nullable = false)
     private String name;
+
     @Column(nullable = false)
     private String email;
+
     @Column(nullable = false)
     private String password;
+
     private String code;
+
     @Type(type = "text")
     private String photo;
 
@@ -38,6 +43,9 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     private List<PostVote> postVotes;
+
+    @OneToMany(mappedBy = "user")
+    private List<PostComment> postComments;
 
     public int getId() {
         return id;
@@ -117,5 +125,21 @@ public class User {
 
     public void setAuthorPosts(List<Post> authorPosts) {
         this.authorPosts = authorPosts;
+    }
+
+    public List<PostVote> getPostVotes() {
+        return postVotes;
+    }
+
+    public void setPostVotes(List<PostVote> postVotes) {
+        this.postVotes = postVotes;
+    }
+
+    public List<PostComment> getPostComments() {
+        return postComments;
+    }
+
+    public void setPostComments(List<PostComment> postComments) {
+        this.postComments = postComments;
     }
 }
