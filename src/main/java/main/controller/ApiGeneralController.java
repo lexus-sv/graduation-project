@@ -9,8 +9,6 @@ import main.model.response.PostModelType;
 import main.model.response.UserModelType;
 import main.repository.PostRepository;
 import main.repository.UserRepository;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
