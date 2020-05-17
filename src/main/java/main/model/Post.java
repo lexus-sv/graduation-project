@@ -5,7 +5,6 @@ import org.hibernate.annotations.Type;
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Table(name = "posts")
@@ -28,7 +27,7 @@ public class Post {
 
     @ManyToOne
     @JoinColumn(name = "author_id",nullable = false)
-    private User author;
+    private User user;
 
     @Temporal(value = TemporalType.TIMESTAMP)
     @Column(nullable = false)
@@ -85,12 +84,12 @@ public class Post {
         this.moderator = moderator;
     }
 
-    public User getAuthor() {
-        return author;
+    public User getUser() {
+        return user;
     }
 
-    public void setAuthor(User author) {
-        this.author = author;
+    public void setUser(User author) {
+        this.user = author;
     }
 
     public Date getTime() {

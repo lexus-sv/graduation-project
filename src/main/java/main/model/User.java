@@ -36,9 +36,9 @@ public class User {
     private String photo;
 
     @OneToMany(mappedBy = "moderator")
-    private List<Post> posts;
+    private List<Post> moderatedPosts;
 
-    @OneToMany(mappedBy = "author")
+    @OneToMany(mappedBy = "user")
     private List<Post> authorPosts;
 
     @OneToMany(mappedBy = "user")
@@ -111,12 +111,12 @@ public class User {
         this.photo = photo;
     }
 
-    public List<Post> getPosts() {
-        return posts;
+    public List<Post> getModeratedPosts() {
+        return moderatedPosts;
     }
 
-    public void setPosts(List<Post> posts) {
-        this.posts = posts;
+    public void setModeratedPosts(List<Post> posts) {
+        this.moderatedPosts = posts;
     }
 
     public List<Post> getAuthorPosts() {
