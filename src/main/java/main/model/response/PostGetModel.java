@@ -34,6 +34,9 @@ public class PostGetModel {
         });
     }
 
+    public PostGetModel(){
+    }
+
     /**
      *
      * @param ut user format for response
@@ -77,6 +80,10 @@ public class PostGetModel {
                         tags);
             default: return null;
         }
+    }
+
+    public PostBehavior getSinglePostInfo(main.model.Post post){
+        return getPostOfType(PostModelType.WITH_COMMENTS, post, getUserOfType(UserModelType.WITH_PHOTO, post.getUser()));
     }
 
     public int getCount() {

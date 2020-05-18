@@ -7,18 +7,18 @@ import main.model.PostVote;
 import main.model.response.PostGetModel;
 import main.model.response.PostModelType;
 import main.model.response.UserModelType;
+import main.model.response.post.PostBehavior;
 import main.repository.PostRepository;
 import main.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.sql.SQLOutput;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 public class ApiGeneralController {
@@ -72,13 +72,32 @@ public class ApiGeneralController {
             @RequestParam(value = "limit") int limit,
             @RequestParam(value = "query") String query)
     {
-        System.out.println("query = "+query);
         List<Post> posts = new ArrayList<>();
-        Iterable<Post> postIterable = postRepository.findAllByTitleContainingAndModerationStatusAndTimeBeforeAndActiveTrue(query, ModerationStatus.ACCEPTED, new Date());
+        Iterable<Post> postIterable;
+        if(query.length()!=0) {
+            postIterable = postRepository.findAllByTitleContainingAndModerationStatusAndTimeBeforeAndActiveTrue(query, ModerationStatus.ACCEPTED, new Date());
+        } else {
+            postIterable = postRepository.findAllByActiveTrueAndModerationStatusAndTimeBefore(ModerationStatus.ACCEPTED, new Date());
+        }
         postIterable.forEach(posts::add);
         posts = getElementsInRange(posts, offset, limit);
         PostGetModel responseBody = new PostGetModel(posts, PostModelType.DEFAULT, UserModelType.DEFAULT);
         return new ResponseEntity(responseBody, HttpStatus.OK);
+    }
+
+
+    @GetMapping(value = "/api/post/{id}")
+    public ResponseEntity getPostById(@PathVariable int id)
+    {
+        Optional<Post> post = postRepository.findByIdAndActiveTrueAndModerationStatus(id, ModerationStatus.ACCEPTED);
+        PostGetModel postGetModel = new PostGetModel();
+        if(post.isPresent()) {
+            PostBehavior responseBody = postGetModel.getSinglePostInfo(post.get());
+            return new ResponseEntity(responseBody, HttpStatus.OK);
+        } else {
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
+
     }
 
     /**
