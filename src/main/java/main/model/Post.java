@@ -15,7 +15,7 @@ public class Post {
 
     @Type(type = "true_false")
     @Column(nullable = false)
-    private boolean isActive;
+    private boolean active;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -61,11 +61,11 @@ public class Post {
     }
 
     public boolean isActive() {
-        return isActive;
+        return active;
     }
 
     public void setActive(boolean active) {
-        isActive = active;
+        this.active = active;
     }
 
     public ModerationStatus getModerationStatus() {
