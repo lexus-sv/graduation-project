@@ -4,7 +4,7 @@ import main.InitInfo;
 import main.model.ModerationStatus;
 import main.model.Post;
 import main.model.PostVote;
-import main.model.response.PostGetModel;
+import main.model.response.ViewModelFactory;
 import main.model.response.PostModelType;
 import main.model.response.UserModelType;
 import main.model.response.post.PostBehavior;
@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @RestController
@@ -27,6 +29,8 @@ public class ApiGeneralController {
     private PostRepository postRepository;
     @Autowired
     private UserRepository userRepository;
+
+    private final static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
     @GetMapping("/api/init")
     public ResponseEntity<InitInfo> init() {
@@ -62,49 +66,66 @@ public class ApiGeneralController {
             case "early":
                 posts.sort(Comparator.comparing(Post::getTime));
         }
-        PostGetModel responseBody = new PostGetModel(posts, PostModelType.DEFAULT, UserModelType.DEFAULT);
+        PostBehavior responseBody = ViewModelFactory.getPosts(posts, PostModelType.DEFAULT, UserModelType.DEFAULT);
         return new ResponseEntity(responseBody, HttpStatus.OK);
     }
 
-    @GetMapping(value = "/api/post/search", params = {"offset","limit","query"})
+    @GetMapping(value = "/api/post/search", params = {"offset", "limit", "query"})
     public ResponseEntity searchPosts(
             @RequestParam(value = "offset") int offset,
             @RequestParam(value = "limit") int limit,
-            @RequestParam(value = "query") String query)
-    {
+            @RequestParam(value = "query") String query) {
         List<Post> posts = new ArrayList<>();
         Iterable<Post> postIterable;
-        if(query.length()!=0) {
+        if (query.length() != 0) {
             postIterable = postRepository.findAllByTitleContainingAndModerationStatusAndTimeBeforeAndActiveTrue(query, ModerationStatus.ACCEPTED, new Date());
         } else {
             postIterable = postRepository.findAllByActiveTrueAndModerationStatusAndTimeBefore(ModerationStatus.ACCEPTED, new Date());
         }
         postIterable.forEach(posts::add);
         posts = getElementsInRange(posts, offset, limit);
-        PostGetModel responseBody = new PostGetModel(posts, PostModelType.DEFAULT, UserModelType.DEFAULT);
+        PostBehavior responseBody = ViewModelFactory.getPosts(posts, PostModelType.DEFAULT, UserModelType.DEFAULT);
         return new ResponseEntity(responseBody, HttpStatus.OK);
     }
 
 
     @GetMapping(value = "/api/post/{id}")
-    public ResponseEntity getPostById(@PathVariable int id)
-    {
+    public ResponseEntity getPostById(@PathVariable int id) {
         Optional<Post> post = postRepository.findByIdAndActiveTrueAndModerationStatus(id, ModerationStatus.ACCEPTED);
-        PostGetModel postGetModel = new PostGetModel();
-        if(post.isPresent()) {
-            PostBehavior responseBody = postGetModel.getSinglePostInfo(post.get());
+        if (post.isPresent()) {
+            PostBehavior responseBody = ViewModelFactory.getSinglePost(post.get());
             return new ResponseEntity(responseBody, HttpStatus.OK);
         } else {
             return new ResponseEntity(HttpStatus.NOT_FOUND);
         }
+    }
 
+    @GetMapping("/api/post/byDate")
+    public ResponseEntity<?> getPostsByDate(
+            @RequestParam(name = "offset") int offset,
+            @RequestParam(name = "limit") int limit,
+            @RequestParam(name = "date") String stringDate
+    ) {
+        List<Post> posts = new ArrayList<>();
+        GregorianCalendar calendar = new GregorianCalendar();
+        Date fromDate = getDateOrNull(stringDate);
+        if(fromDate!=null) {
+            calendar.setTime(fromDate);
+            calendar.set(Calendar.DAY_OF_MONTH, calendar.get(Calendar.DAY_OF_MONTH) + 1);
+            Date toDate = calendar.getTime();
+            Iterable<Post> postIterable = postRepository.findAllByTimeBetweenAndActiveTrueAndModerationStatus(fromDate, toDate, ModerationStatus.ACCEPTED);
+            postIterable.forEach(posts::add);
+            posts = getElementsInRange(posts, offset, limit);
+        } else {
+            return new ResponseEntity(HttpStatus.BAD_REQUEST);
+        }
+        return null;
     }
 
     /**
-     *
-     * @param list list that will be cut to specific range
+     * @param list   list that will be cut to specific range
      * @param offset begin index
-     * @param limit amount of elements
+     * @param limit  amount of elements
      * @return sublist
      */
     private List getElementsInRange(List list, int offset, int limit) {
@@ -118,6 +139,14 @@ public class ApiGeneralController {
             }
         } else {
             return new ArrayList<>();
+        }
+    }
+
+    private Date getDateOrNull(String s) {
+        try {
+            return dateFormat.parse(s);
+        } catch (ParseException ex) {
+            return null;
         }
     }
 }
