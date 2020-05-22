@@ -3,6 +3,7 @@ package main.controller;
 import main.model.ModerationStatus;
 import main.model.Post;
 import main.model.PostVote;
+import main.model.User;
 import main.model.response.PostModelType;
 import main.model.response.UserModelType;
 import main.model.response.ViewModelFactory;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -33,6 +35,7 @@ public class ApiPostController {
             @RequestParam(value = "offset") int offset,
             @RequestParam(value = "limit") int limit,
             @RequestParam(value = "mode") String mode) {
+        System.out.println(RequestContextHolder.currentRequestAttributes().getSessionId());
         List<Post> posts = new ArrayList<>();
         Iterable<Post> postsIterable = postRepository.findAllByActiveTrueAndModerationStatusAndTimeBefore(ModerationStatus.ACCEPTED, new Date());
         postsIterable.forEach(posts::add);
@@ -40,14 +43,18 @@ public class ApiPostController {
         switch (mode) {
             case "recent":
                 posts.sort(Comparator.comparing(Post::getTime).reversed());
+                break;
             case "popular":
                 posts.sort(Comparator.comparing(post -> (post.getPostComments().size())));
                 Collections.reverse(posts);
+                break;
             case "best":
                 posts.sort(Comparator.comparingLong(o -> o.getPostVotes().stream().filter(PostVote::isValue).count()));
                 Collections.reverse(posts);
+                break;
             case "early":
                 posts.sort(Comparator.comparing(Post::getTime));
+                break;
         }
         PostBehavior responseBody = ViewModelFactory.getPosts(posts, PostModelType.DEFAULT, UserModelType.DEFAULT);
         return new ResponseEntity(responseBody, HttpStatus.OK);
@@ -119,10 +126,35 @@ public class ApiPostController {
     )
     {
         List<Post> posts = new ArrayList<>();
-        Iterable<Post> postIterable = postRepository.findAllByTag(tag, ModerationStatus.ACCEPTED);
+        Iterable<Post> postIterable = postRepository.findAllByTag(tag.trim(), ModerationStatus.ACCEPTED);
         postIterable.forEach(posts::add);
+        posts = getElementsInRange(posts, offset, limit);
         PostBehavior postBehavior = ViewModelFactory.getPosts(posts, PostModelType.DEFAULT, UserModelType.DEFAULT);
         return new ResponseEntity(postBehavior, HttpStatus.OK);
+    }
+
+    @GetMapping("/api/post/moderation")
+    public ResponseEntity<?> moderation(
+            @RequestParam(value = "offset") int offset,
+            @RequestParam(value = "limit") int limit,
+            @RequestParam(value = "status") String status
+    )
+    {
+        List<Post> posts = new ArrayList<>();
+        Iterable<Post> postIterable = null;
+        ModerationStatus moderationStatus;
+        switch (status){
+            case "new":
+                moderationStatus=ModerationStatus.NEW;
+                break;
+            case "accepted":
+                moderationStatus=ModerationStatus.ACCEPTED;
+                break;
+            case "declined":
+                moderationStatus=ModerationStatus.DECLINED;
+                break;
+        }
+
     }
 
     /**
