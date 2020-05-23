@@ -1,11 +1,7 @@
 package main.controller;
 
-import main.model.User;
+import main.service.AuthService;
 import main.model.request.UserRequest;
-import main.model.response.ViewModelFactory;
-import main.repository.PostRepository;
-import main.repository.UserRepository;
-import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,43 +9,33 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
 
 import java.util.HashMap;
-import java.util.Optional;
 
 @RestController
+@RequestMapping(value = "/api/auth/")
 public class ApiAuthController {
 
-    private HashMap<String, Integer> sessions = new HashMap<>();
-
     @Autowired
-    private UserRepository userRepository;
+    private AuthService authService;
 
-    @PostMapping(value = "/api/auth/login")
+    @PostMapping(value = "login")
     public ResponseEntity login(@RequestBody UserRequest userDto) {
-        String email = userDto.getEmail();
-        String password = userDto.getPassword();
-        System.out.println("email: "+email + " password: "+password);
-        Optional<User> user = userRepository.findByEmail(email);
-        JSONObject responseBody = new JSONObject();
-        if (user.isPresent()) {
-            if (user.get().getPassword().equals(password)) {
-                sessions.put(RequestContextHolder.currentRequestAttributes().getSessionId(), user.get().getId());
-                responseBody.put("result", true);
-                responseBody.put("user", ViewModelFactory.getUserInfo(user.get()));
-                return new ResponseEntity(responseBody, HttpStatus.OK);
-            } else return new ResponseEntity(responseBody.put("result", false), HttpStatus.NOT_FOUND);
-        } else return new ResponseEntity(responseBody.put("result", false), HttpStatus.NOT_FOUND);
+        HashMap<Object, Object> response = authService.authenticate(userDto);
+        return new ResponseEntity(response,  (boolean) response.get("result") ? HttpStatus.OK : HttpStatus.NOT_FOUND);
     }
 
-    @GetMapping(value = "/api/auth/check")
+    @GetMapping(value = "check")
     public ResponseEntity authCheck() {
-        JSONObject responseBody = new JSONObject();
-        String session = RequestContextHolder.currentRequestAttributes().getSessionId();
-        if(sessions.containsKey(session)){
-            User user = userRepository.findById(sessions.get(session)).get();
-            responseBody.put("result",true);
-            responseBody.put("user", ViewModelFactory.getUserInfo(user));
-        } else responseBody.put("result", false);
+        HashMap<Object, Object> response = authService.authCheck(RequestContextHolder.currentRequestAttributes().getSessionId());
+        return new ResponseEntity(response,  HttpStatus.OK);
+    }
 
-        return new ResponseEntity(responseBody, HttpStatus.OK);
+    @GetMapping(value = "logout")
+    public ResponseEntity logout(){
+        return new ResponseEntity(authService.logout(RequestContextHolder.currentRequestAttributes().getSessionId()), HttpStatus.OK);
+    }
+
+    @GetMapping(value = "captcha")
+    public ResponseEntity<?> captcha(){
+        return null;
     }
 }

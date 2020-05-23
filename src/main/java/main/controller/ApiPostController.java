@@ -36,9 +36,7 @@ public class ApiPostController {
             @RequestParam(value = "limit") int limit,
             @RequestParam(value = "mode") String mode) {
         System.out.println(RequestContextHolder.currentRequestAttributes().getSessionId());
-        List<Post> posts = new ArrayList<>();
-        Iterable<Post> postsIterable = postRepository.findAllByActiveTrueAndModerationStatusAndTimeBefore(ModerationStatus.ACCEPTED, new Date());
-        postsIterable.forEach(posts::add);
+        List<Post> posts = postRepository.findAllByActiveTrueAndModerationStatusAndTimeBefore(ModerationStatus.ACCEPTED, new Date());
         posts = getElementsInRange(posts, offset, limit);
         switch (mode) {
             case "recent":
@@ -65,14 +63,12 @@ public class ApiPostController {
             @RequestParam(value = "offset") int offset,
             @RequestParam(value = "limit") int limit,
             @RequestParam(value = "query") String query) {
-        List<Post> posts = new ArrayList<>();
-        Iterable<Post> postIterable;
+        List<Post> posts;
         if (query.length() != 0) {
-            postIterable = postRepository.findAllByTitleContainingAndModerationStatusAndTimeBeforeAndActiveTrue(query, ModerationStatus.ACCEPTED, new Date());
+            posts = postRepository.findAllByTitleContainingAndModerationStatusAndTimeBeforeAndActiveTrue(query, ModerationStatus.ACCEPTED, new Date());
         } else {
-            postIterable = postRepository.findAllByActiveTrueAndModerationStatusAndTimeBefore(ModerationStatus.ACCEPTED, new Date());
+            posts = postRepository.findAllByActiveTrueAndModerationStatusAndTimeBefore(ModerationStatus.ACCEPTED, new Date());
         }
-        postIterable.forEach(posts::add);
         posts = getElementsInRange(posts, offset, limit);
         PostBehavior responseBody = ViewModelFactory.getPosts(posts, PostModelType.DEFAULT, UserModelType.DEFAULT);
         return new ResponseEntity(responseBody, HttpStatus.OK);
@@ -96,8 +92,7 @@ public class ApiPostController {
             @RequestParam(name = "limit") int limit,
             @RequestParam(name = "date") String stringDate
     ) {
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-        List<Post> posts = new ArrayList<>();
+        List<Post> posts;
         GregorianCalendar calendar = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
         Date fromDate = getDateOrNull(stringDate);
         if(fromDate!=null) {
@@ -107,8 +102,7 @@ public class ApiPostController {
             calendar.set(Calendar.DAY_OF_MONTH, calendar.get(Calendar.DAY_OF_MONTH)+1);
             calendar.set(Calendar.SECOND, calendar.get(Calendar.SECOND)-1);
             Date toDate = calendar.getTime();
-            Iterable<Post> postIterable = postRepository.findAllByTimeAfterAndTimeBeforeAndActiveTrueAndModerationStatus(fromDate, toDate, ModerationStatus.ACCEPTED);
-            postIterable.forEach(posts::add);
+            posts = postRepository.findAllByTimeAfterAndTimeBeforeAndActiveTrueAndModerationStatus(fromDate, toDate, ModerationStatus.ACCEPTED);
             posts = getElementsInRange(posts, offset, limit);
             PostBehavior responseBody = ViewModelFactory.getPosts(posts, PostModelType.DEFAULT, UserModelType.DEFAULT);
             return new ResponseEntity(responseBody, HttpStatus.OK);
@@ -125,9 +119,7 @@ public class ApiPostController {
             @RequestParam(name = "tag") String tag
     )
     {
-        List<Post> posts = new ArrayList<>();
-        Iterable<Post> postIterable = postRepository.findAllByTag(tag.trim(), ModerationStatus.ACCEPTED);
-        postIterable.forEach(posts::add);
+        List<Post> posts = postRepository.findAllByTag(tag.trim(), ModerationStatus.ACCEPTED);
         posts = getElementsInRange(posts, offset, limit);
         PostBehavior postBehavior = ViewModelFactory.getPosts(posts, PostModelType.DEFAULT, UserModelType.DEFAULT);
         return new ResponseEntity(postBehavior, HttpStatus.OK);
@@ -141,7 +133,6 @@ public class ApiPostController {
     )
     {
         List<Post> posts = new ArrayList<>();
-        Iterable<Post> postIterable = null;
         ModerationStatus moderationStatus;
         switch (status){
             case "new":
@@ -154,7 +145,7 @@ public class ApiPostController {
                 moderationStatus=ModerationStatus.DECLINED;
                 break;
         }
-
+        return null;
     }
 
     /**
