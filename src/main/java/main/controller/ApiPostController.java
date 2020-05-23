@@ -9,6 +9,7 @@ import main.model.response.UserModelType;
 import main.model.response.ViewModelFactory;
 import main.model.response.post.PostBehavior;
 import main.repository.PostRepository;
+import main.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +28,9 @@ public class ApiPostController {
 
     @Autowired
     private PostRepository postRepository;
+
+    @Autowired
+    private AuthService authService;
 
     private final static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -77,7 +81,8 @@ public class ApiPostController {
 
     @GetMapping(value = "/api/post/{id}")
     public ResponseEntity getPostById(@PathVariable int id) {
-        Optional<Post> post = postRepository.findByIdAndActiveTrueAndModerationStatus(id, ModerationStatus.ACCEPTED);
+        //Здесь должно быть условие с активностью поста и его статусом модерации
+        Optional<Post> post = postRepository.findById(id);
         if (post.isPresent()) {
             PostBehavior responseBody = ViewModelFactory.getSinglePost(post.get());
             return new ResponseEntity(responseBody, HttpStatus.OK);
@@ -132,20 +137,55 @@ public class ApiPostController {
             @RequestParam(value = "status") String status
     )
     {
-        List<Post> posts = new ArrayList<>();
+        List<Post> posts;
         ModerationStatus moderationStatus;
         switch (status){
             case "new":
                 moderationStatus=ModerationStatus.NEW;
                 break;
-            case "accepted":
-                moderationStatus=ModerationStatus.ACCEPTED;
-                break;
             case "declined":
                 moderationStatus=ModerationStatus.DECLINED;
                 break;
+            default: moderationStatus=ModerationStatus.ACCEPTED;
         }
-        return null;
+        User user = authService.getCurrentUser(RequestContextHolder.currentRequestAttributes().getSessionId());
+        posts = postRepository.findAllByActiveTrueAndModeratorOrModerationStatusAndActiveTrue(user, moderationStatus);
+        posts = getElementsInRange(posts, offset, limit);
+        PostBehavior responseBody = ViewModelFactory.getPosts(posts, PostModelType.FOR_MODERATION, UserModelType.DEFAULT);
+        return new ResponseEntity(responseBody, HttpStatus.OK);
+    }
+
+    @GetMapping("/api/post/my")
+    public ResponseEntity my(
+            @RequestParam(value = "offset") int offset,
+            @RequestParam(value = "limit") int limit,
+            @RequestParam(value = "status") String status)
+    {
+        //inactive - скрытые, ещё не опубликованы (is_active = 0)
+        //pending - активные, ожидают утверждения модератором (is_active = 1,
+        //moderation_status = NEW)
+        //declined - отклонённые по итогам модерации (is_active = 1, moderation_status =
+        //DECLINED)
+        //published - опубликованные по итогам модерации (is_active = 1, moderation_status =
+        //ACCEPTED)
+        List<Post> posts = new ArrayList<>();
+        switch (status){
+            case "inactive":
+                posts = postRepository.findAllByActiveFalse();
+                break;
+            case "pending":
+                posts = postRepository.findAllByActiveTrueAndModerationStatus(ModerationStatus.NEW);
+                break;
+            case "declined":
+                posts = postRepository.findAllByActiveTrueAndModerationStatus(ModerationStatus.DECLINED);
+                break;
+            case "published":
+                posts = postRepository.findAllByActiveTrueAndModerationStatus(ModerationStatus.ACCEPTED);
+                break;
+        }
+        posts = getElementsInRange(posts, offset, limit);
+        PostBehavior responseBody = ViewModelFactory.getPosts(posts, PostModelType.DEFAULT, UserModelType.WITH_EMAIL);
+        return new ResponseEntity(responseBody, HttpStatus.OK);
     }
 
     /**

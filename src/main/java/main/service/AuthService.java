@@ -130,4 +130,8 @@ public class AuthService {
         Matcher matcher = p.matcher(name);
         return matcher.matches();
     }
+
+    public User getCurrentUser(String session){
+        return userRepository.findById(sessions.get(session)).orElse(null);
+    }
 }

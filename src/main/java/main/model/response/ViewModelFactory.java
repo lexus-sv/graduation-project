@@ -2,14 +2,8 @@ package main.model.response;
 
 import main.model.PostVote;
 import main.model.TagToPost;
-import main.model.response.post.Post;
-import main.model.response.post.PostBehavior;
-import main.model.response.post.PostWithCommentsAndTags;
-import main.model.response.post.Posts;
-import main.model.response.user.User;
-import main.model.response.user.UserBehavior;
-import main.model.response.user.UserFullInfo;
-import main.model.response.user.UserWithPhoto;
+import main.model.response.post.*;
+import main.model.response.user.*;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -58,6 +52,8 @@ public class ViewModelFactory {
                         user.isModerator(), user.getModeratedPosts().size(), user.isModerator());
             case WITH_PHOTO:
                 return new UserWithPhoto(user.getId(), user.getName(), user.getPhoto());
+            case WITH_EMAIL:
+                return new UserWithEmail(user.getId(), user.getEmail());
             default:
                 return null;
         }
@@ -87,6 +83,8 @@ public class ViewModelFactory {
                         post.getViewCount(),
                         comments,
                         tags);
+            case FOR_MODERATION:
+                return new PostForModeration(post.getId(),post.getTime(), user, post.getTitle(), post.getText());
             default:
                 return null;
         }
