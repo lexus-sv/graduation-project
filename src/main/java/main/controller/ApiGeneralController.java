@@ -39,7 +39,6 @@ public class ApiGeneralController {
         List<GlobalSettings> settings = new ArrayList<>();
         Iterable<GlobalSettings> settingsIterable = settingsRepository.findAll();
         settingsIterable.forEach(settings::add);
-        System.out.println(settings);
         JSONObject responseBody = new JSONObject();
         settings.forEach(s -> responseBody.put(s.getCode(), s.isValue()));
         return new ResponseEntity(responseBody, HttpStatus.OK);

@@ -5,7 +5,6 @@ import main.model.response.user.User;
 import main.model.response.user.UserBehavior;
 
 import java.util.Date;
-
 public class Post implements PostBehavior{
 
     private String announce;
@@ -25,8 +24,6 @@ public class Post implements PostBehavior{
     private UserBehavior user;
 
     private int viewCount;
-
-    //withComments, ForModeration, MyPost
 
     public Post(int id, Date time, UserBehavior user, String title, String announce, int likeCount, int dislikeCount, int commentCount,
                 int viewCount) {

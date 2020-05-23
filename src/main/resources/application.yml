@@ -2,3 +2,6 @@ spring.datasource.url: jdbc:mysql://localhost:3306/devpub?serverTimezone=UTC&cha
 spring.datasource.username: root
 spring.datasource.password: root
 spring.jpa.hibernate.ddl-auto: update
+
+jwt.token.secret: tokensecret
+jwt.token.expire: 3600000

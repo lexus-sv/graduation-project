@@ -154,7 +154,7 @@ public class ApiPostController {
                 moderationStatus=ModerationStatus.DECLINED;
                 break;
         }
-
+        return null;
     }
 
     /**
