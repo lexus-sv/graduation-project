@@ -11,6 +11,10 @@ public class RegisterUserRequest {
     @JsonProperty("captcha_secret")
     private String captchaSecret;
 
+    public RegisterUserRequest(){
+
+    }
+
     public RegisterUserRequest(String email, String name, String password, String captcha, String captchaSecret) {
         this.email = email;
         this.name = name;

@@ -27,6 +27,7 @@ public class ApiAuthController {
     @PostMapping(value = "login")
     public ResponseEntity login(@RequestBody UserRequest userDto) {
         HashMap<Object, Object> response = authService.authenticate(userDto);
+        System.out.println(userDto);
         return new ResponseEntity(response,  (boolean) response.get("result") ? HttpStatus.OK : HttpStatus.NOT_FOUND);
     }
 
@@ -44,5 +45,10 @@ public class ApiAuthController {
     @GetMapping(value = "captcha")
     public ResponseEntity<?> captcha() throws IOException {
         return new ResponseEntity(captchaService.createCaptcha(), HttpStatus.OK);
+    }
+
+    @PostMapping(value = "register")
+    public ResponseEntity<?> register(@RequestBody RegisterUserRequest userDto){
+        return new ResponseEntity(authService.register(userDto), HttpStatus.OK);
     }
 }

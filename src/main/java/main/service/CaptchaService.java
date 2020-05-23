@@ -14,9 +14,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Base64;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Random;
 
@@ -78,5 +76,10 @@ public class CaptchaService {
 
     private void clearExpiredCaptcha(){
         captchaCodeRepository.removeAllByTimeBefore(new Date());
+    }
+
+    public boolean isValidCaptcha(String code, String secret){
+        CaptchaCode captcha = captchaCodeRepository.findFirstBySecretCode(secret).orElse(null);
+        return captcha != null && captcha.getCode().equals(code);
     }
 }

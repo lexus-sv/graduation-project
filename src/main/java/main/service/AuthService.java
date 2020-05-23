@@ -1,36 +1,44 @@
 package main.service;
 
 import main.model.User;
+import main.model.request.RegisterUserRequest;
 import main.model.request.UserRequest;
 import main.model.response.ViewModelFactory;
 import main.repository.UserRepository;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 
+import java.util.Base64;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class AuthService {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private CaptchaService captchaService;
 
     private HashMap<String, Integer> sessions = new HashMap<>();
     private final static String RESULT_KEY_NAME = "result";
     private final static String USER_KEY_NAME = "user";
+    private final static String ERROR_KEY_NAME = "errors";
     private final static Logger logger = LogManager.getLogger();
-
 
     public HashMap<Object, Object> authenticate(UserRequest userDto) {
         HashMap<Object, Object> responseBody = new HashMap<>();
         responseBody.put(RESULT_KEY_NAME, false);
         String email = userDto.getEmail();
-        String password = userDto.getPassword();
+        Base64.Encoder encoder = Base64.getEncoder();
+        String password = encoder.encodeToString(userDto.getPassword().getBytes());
         User user = userRepository.findByEmail(email).orElse(null);
         if (user != null && password.equals(user.getPassword())) {//success
             sessions.put(RequestContextHolder.currentRequestAttributes().getSessionId(), user.getId());
@@ -61,8 +69,52 @@ public class AuthService {
         return null;
     }
 
-    public HashMap<Object, Object> register(){
-        return null;
+    public HashMap<Object, Object> register(RegisterUserRequest request){
+        HashMap<Object, Object> response = new HashMap<>();
+        response.put(RESULT_KEY_NAME, false);
+        JSONObject errors = new JSONObject();
+        response.put(ERROR_KEY_NAME, errors);
+        String email = request.getEmail();
+        if(userRepository.existsByEmail(email)){
+            errors.put("email", "Email already exists");
+        }
+        if(request.getName().length()<3 || !isValidName(request.getName())){
+            errors.put("name", "Имя указано неверно.");
+        }
+        if(request.getPassword().length()<6){
+            errors.put("password", "Пароль не может быть меньше 6 символов");
+        }
+        if(!captchaService.isValidCaptcha(request.getCaptcha(), request.getCaptchaSecret())){
+            errors.put("captcha", "Код с картинки введён неверно");
+        }
+        if(errors.isEmpty()){
+            response.put(RESULT_KEY_NAME, true);
+            response.remove(ERROR_KEY_NAME);
+            //private int id;
+            //    private boolean isModerator;
+            //    private Date registrationDate;
+            //    private String name;
+            //    private String email;
+            //    private String password;
+            //    private String code;
+            //    private String photo;
+            Base64.Encoder encoder = Base64.getEncoder();
+            String password = encoder.encodeToString(request.getPassword().getBytes());
+            User user = new User();
+            user.setModerator(false);
+            user.setRegistrationDate(new Date());
+            user.setName(request.getName());
+            user.setEmail(email);
+            user.setPassword(password);
+            user.setCode(null);
+            user.setPhoto(null);
+
+            userRepository.save(user);
+            logger.log(Level.INFO, "User "+user+" successfully registered");
+//            authenticate(new UserRequest(email, password));
+            return response;
+        }
+        return response;
     }
 
     public HashMap<String, Boolean> logout(String session){
@@ -71,5 +123,11 @@ public class AuthService {
         sessions.remove(session);
         logger.log(Level.INFO, "logout session "+ session);
         return response;
+    }
+
+    private boolean isValidName(String name){
+        Pattern p = Pattern.compile("^[ a-zA-Z0-9_.-]*$");
+        Matcher matcher = p.matcher(name);
+        return matcher.matches();
     }
 }
