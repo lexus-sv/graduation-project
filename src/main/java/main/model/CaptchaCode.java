@@ -53,4 +53,14 @@ public class CaptchaCode {
     public void setSecretCode(String secretCode) {
         this.secretCode = secretCode;
     }
+
+    @Override
+    public String toString() {
+        return "CaptchaCode{" +
+                "id=" + id +
+                ", time=" + time +
+                ", code='" + code + '\'' +
+                ", secretCode='" + secretCode + '\'' +
+                '}';
+    }
 }

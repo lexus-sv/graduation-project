@@ -1,14 +1,18 @@
 package main.controller;
 
+import main.model.request.RegisterUserRequest;
 import main.service.AuthService;
 import main.model.request.UserRequest;
+import main.service.CaptchaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
 
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.Random;
 
 @RestController
 @RequestMapping(value = "/api/auth/")
@@ -16,6 +20,9 @@ public class ApiAuthController {
 
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private CaptchaService captchaService;
 
     @PostMapping(value = "login")
     public ResponseEntity login(@RequestBody UserRequest userDto) {
@@ -35,7 +42,7 @@ public class ApiAuthController {
     }
 
     @GetMapping(value = "captcha")
-    public ResponseEntity<?> captcha(){
-        return null;
+    public ResponseEntity<?> captcha() throws IOException {
+        return new ResponseEntity(captchaService.createCaptcha(), HttpStatus.OK);
     }
 }
