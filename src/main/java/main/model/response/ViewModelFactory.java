@@ -16,7 +16,7 @@ public class ViewModelFactory {
     }
 
     public static PostBehavior getSinglePost(main.model.Post post) {
-        return getPostOfType(PostModelType.WITH_COMMENTS, post, getUserOfType(UserModelType.WITH_PHOTO, post.getUser()));
+        return getPostOfType(PostModelType.WITH_COMMENTS, post, getUserOfType(UserModelType.DEFAULT, post.getUser()));
     }
 
     public static UserBehavior getUserInfo(main.model.User user) {

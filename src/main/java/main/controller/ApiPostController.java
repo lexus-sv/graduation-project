@@ -1,22 +1,20 @@
 package main.controller;
 
-import main.model.ModerationStatus;
-import main.model.Post;
-import main.model.PostVote;
-import main.model.User;
+import main.model.*;
+import main.model.request.AddPostRequest;
 import main.model.response.PostModelType;
 import main.model.response.UserModelType;
 import main.model.response.ViewModelFactory;
 import main.model.response.post.PostBehavior;
 import main.repository.PostRepository;
+import main.repository.TagRepository;
+import main.repository.UserRepository;
 import main.service.AuthService;
+import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
 
 import java.text.ParseException;
@@ -28,6 +26,9 @@ public class ApiPostController {
 
     @Autowired
     private PostRepository postRepository;
+
+    @Autowired
+    private TagRepository tagRepository;
 
     @Autowired
     private AuthService authService;
@@ -100,12 +101,12 @@ public class ApiPostController {
         List<Post> posts;
         GregorianCalendar calendar = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
         Date fromDate = getDateOrNull(stringDate);
-        if(fromDate!=null) {
+        if (fromDate != null) {
             calendar.setTime(fromDate);
-            calendar.set(Calendar.SECOND, calendar.get(Calendar.SECOND)-1);
+            calendar.set(Calendar.SECOND, calendar.get(Calendar.SECOND) - 1);
             fromDate = calendar.getTime();
-            calendar.set(Calendar.DAY_OF_MONTH, calendar.get(Calendar.DAY_OF_MONTH)+1);
-            calendar.set(Calendar.SECOND, calendar.get(Calendar.SECOND)-1);
+            calendar.set(Calendar.DAY_OF_MONTH, calendar.get(Calendar.DAY_OF_MONTH) + 1);
+            calendar.set(Calendar.SECOND, calendar.get(Calendar.SECOND) - 1);
             Date toDate = calendar.getTime();
             posts = postRepository.findAllByTimeAfterAndTimeBeforeAndActiveTrueAndModerationStatus(fromDate, toDate, ModerationStatus.ACCEPTED);
             posts = getElementsInRange(posts, offset, limit);
@@ -122,8 +123,7 @@ public class ApiPostController {
             @RequestParam(name = "offset") int offset,
             @RequestParam(name = "limit") int limit,
             @RequestParam(name = "tag") String tag
-    )
-    {
+    ) {
         List<Post> posts = postRepository.findAllByTag(tag.trim(), ModerationStatus.ACCEPTED);
         posts = getElementsInRange(posts, offset, limit);
         PostBehavior postBehavior = ViewModelFactory.getPosts(posts, PostModelType.DEFAULT, UserModelType.DEFAULT);
@@ -135,18 +135,18 @@ public class ApiPostController {
             @RequestParam(value = "offset") int offset,
             @RequestParam(value = "limit") int limit,
             @RequestParam(value = "status") String status
-    )
-    {
+    ) {
         List<Post> posts;
         ModerationStatus moderationStatus;
-        switch (status){
+        switch (status) {
             case "new":
-                moderationStatus=ModerationStatus.NEW;
+                moderationStatus = ModerationStatus.NEW;
                 break;
             case "declined":
-                moderationStatus=ModerationStatus.DECLINED;
+                moderationStatus = ModerationStatus.DECLINED;
                 break;
-            default: moderationStatus=ModerationStatus.ACCEPTED;
+            default:
+                moderationStatus = ModerationStatus.ACCEPTED;
         }
         User user = authService.getCurrentUser(RequestContextHolder.currentRequestAttributes().getSessionId());
         posts = postRepository.findAllByActiveTrueAndModeratorOrModerationStatusAndActiveTrue(user, moderationStatus);
@@ -159,8 +159,7 @@ public class ApiPostController {
     public ResponseEntity my(
             @RequestParam(value = "offset") int offset,
             @RequestParam(value = "limit") int limit,
-            @RequestParam(value = "status") String status)
-    {
+            @RequestParam(value = "status") String status) {
         //inactive - скрытые, ещё не опубликованы (is_active = 0)
         //pending - активные, ожидают утверждения модератором (is_active = 1,
         //moderation_status = NEW)
@@ -169,7 +168,7 @@ public class ApiPostController {
         //published - опубликованные по итогам модерации (is_active = 1, moderation_status =
         //ACCEPTED)
         List<Post> posts = new ArrayList<>();
-        switch (status){
+        switch (status) {
             case "inactive":
                 posts = postRepository.findAllByActiveFalse();
                 break;
@@ -188,13 +187,53 @@ public class ApiPostController {
         return new ResponseEntity(responseBody, HttpStatus.OK);
     }
 
+    @PostMapping("/api/post")
+    public ResponseEntity<?> post(@RequestBody AddPostRequest request) throws ParseException {
+        HashMap<Object, Object> response = new HashMap<>();
+        response.put("result", false);
+        JSONObject errors = new JSONObject();
+        response.put("errors", errors);
+
+        int textLength = request.getText().trim().length();
+        int titleLength = request.getTitle().trim().length();
+        if (titleLength < 10){
+            errors.put("title", "Заголовок должен быть не меньше 10 символов");
+        }
+        if(textLength<500){
+            errors.put("text", "Текст поста должен быть не менее 500 символов");
+        }
+        if(errors.isEmpty()){
+            response.remove("errors");
+            response.put("result", true);
+            Post post = new Post();
+            post.setActive(request.isActive());
+            post.setModerationStatus(ModerationStatus.NEW);
+            post.setText(request.getText());
+            post.setTitle(request.getTitle());
+            post.setTime(new SimpleDateFormat("yyyy-MM-dd hh:mm").parse(request.getTime()));
+            post.setViewCount(0);
+            post.setModerator(null);
+            post.setUser(authService.getCurrentUser(RequestContextHolder.currentRequestAttributes().getSessionId()));
+            List<TagToPost> tags = new ArrayList<>();
+            request.getTags().forEach(tag->{
+                TagToPost ttp = new TagToPost();
+                ttp.setPost(post);
+                ttp.setTag(tagRepository.findFirstByName(tag));
+                tags.add(ttp);
+            });
+            post.setTags(tags);
+            postRepository.save(post);
+        }
+        return new ResponseEntity(response, HttpStatus.OK);
+    }
+
     /**
      * @param list   list that will be cut to specific range
      * @param offset begin index
      * @param limit  amount of elements
      * @return sublist
      */
-    private List getElementsInRange(List list, int offset, int limit) {
+    private List<Post> getElementsInRange(List<Post> list, int offset, int limit) {
         int lastElementIndex = offset + limit;
         int lastPostIndex = list.size();
         if (lastPostIndex >= offset) {//если есть элементы входящие в нужный диапазон

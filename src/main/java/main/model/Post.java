@@ -1,5 +1,6 @@
 package main.model;
 
+import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
@@ -46,7 +47,7 @@ public class Post {
     @OneToMany(mappedBy = "post")
     private List<PostVote> postVotes;
 
-    @OneToMany(mappedBy = "post")
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     private List<TagToPost> tags;
 
     @OneToMany(mappedBy = "post")
