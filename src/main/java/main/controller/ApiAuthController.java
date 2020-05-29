@@ -1,8 +1,8 @@
 package main.controller;
 
-import main.model.request.RegisterUserRequest;
+import main.api.request.RegisterUserRequest;
 import main.service.AuthService;
-import main.model.request.UserRequest;
+import main.api.request.UserRequest;
 import main.service.CaptchaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,7 +12,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Random;
 
 @RestController
 @RequestMapping(value = "/api/auth/")

@@ -1,7 +1,7 @@
 package main.service;
 
 import main.model.CaptchaCode;
-import main.model.response.Captcha;
+import main.api.response.Captcha;
 import main.repository.CaptchaCodeRepository;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;

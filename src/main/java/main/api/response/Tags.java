@@ -1,5 +1,5 @@
 
-package main.model.response;
+package main.api.response;
 
 import java.util.List;
 

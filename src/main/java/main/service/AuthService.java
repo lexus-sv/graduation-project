@@ -1,9 +1,9 @@
 package main.service;
 
 import main.model.User;
-import main.model.request.RegisterUserRequest;
-import main.model.request.UserRequest;
-import main.model.response.ViewModelFactory;
+import main.api.request.RegisterUserRequest;
+import main.api.request.UserRequest;
+import main.api.response.ViewModelFactory;
 import main.repository.UserRepository;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -37,8 +37,7 @@ public class AuthService {
         HashMap<Object, Object> responseBody = new HashMap<>();
         responseBody.put(RESULT_KEY_NAME, false);
         String email = userDto.getEmail();
-        Base64.Encoder encoder = Base64.getEncoder();
-        String password = encoder.encodeToString(userDto.getPassword().getBytes());
+        String password = userDto.getPassword();
         User user = userRepository.findByEmail(email).orElse(null);
         if (user != null && password.equals(user.getPassword())) {//success
             sessions.put(RequestContextHolder.currentRequestAttributes().getSessionId(), user.getId());
@@ -90,16 +89,7 @@ public class AuthService {
         if(errors.isEmpty()){
             response.put(RESULT_KEY_NAME, true);
             response.remove(ERROR_KEY_NAME);
-            //private int id;
-            //    private boolean isModerator;
-            //    private Date registrationDate;
-            //    private String name;
-            //    private String email;
-            //    private String password;
-            //    private String code;
-            //    private String photo;
-            Base64.Encoder encoder = Base64.getEncoder();
-            String password = encoder.encodeToString(request.getPassword().getBytes());
+            String password = request.getPassword();
             User user = new User();
             user.setModerator(false);
             user.setRegistrationDate(new Date());
@@ -111,7 +101,6 @@ public class AuthService {
 
             userRepository.save(user);
             logger.log(Level.INFO, "User "+user+" successfully registered");
-//            authenticate(new UserRequest(email, password));
             return response;
         }
         return response;
@@ -133,5 +122,9 @@ public class AuthService {
 
     public User getCurrentUser(String session){
         return userRepository.findById(sessions.get(session)).orElse(null);
+    }
+
+    public boolean isAuthorized(String session){
+        return sessions.containsKey(session);
     }
 }

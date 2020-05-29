@@ -1,4 +1,4 @@
-package main.model.response;
+package main.api.response;
 
 public enum PostModelType {
     DEFAULT,

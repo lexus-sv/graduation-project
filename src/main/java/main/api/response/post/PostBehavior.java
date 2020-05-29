@@ -1,4 +1,4 @@
-package main.model.response.post;
+package main.api.response.post;
 
 public interface PostBehavior {
 }

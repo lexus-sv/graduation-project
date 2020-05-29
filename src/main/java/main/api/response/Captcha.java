@@ -1,4 +1,4 @@
-package main.model.response;
+package main.api.response;
 
 public class Captcha {
     private String secret;

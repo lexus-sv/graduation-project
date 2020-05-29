@@ -1,4 +1,4 @@
-package main.model.request;
+package main.api.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

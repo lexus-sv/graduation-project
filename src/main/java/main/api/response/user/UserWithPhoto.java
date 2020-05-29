@@ -1,15 +1,19 @@
-package main.model.response.user;
 
-public class UserWithEmail implements UserBehavior {
+package main.api.response.user;
+
+
+public class UserWithPhoto implements UserBehavior {
+
     private int id;
+
     private String name;
 
-    public UserWithEmail() {
-    }
+    private String photo;
 
-    public UserWithEmail(int id, String name) {
+    public UserWithPhoto(int id, String name, String photo) {
         this.id = id;
         this.name = name;
+        this.photo = photo;
     }
 
     public int getId() {
@@ -27,4 +31,13 @@ public class UserWithEmail implements UserBehavior {
     public void setName(String name) {
         this.name = name;
     }
+
+    public String getPhoto() {
+        return photo;
+    }
+
+    public void setPhoto(String photo) {
+        this.photo = photo;
+    }
+
 }
