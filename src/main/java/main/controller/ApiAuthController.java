@@ -26,7 +26,6 @@ public class ApiAuthController {
     @PostMapping(value = "login")
     public ResponseEntity login(@RequestBody UserRequest userDto) {
         HashMap<Object, Object> response = authService.authenticate(userDto);
-        System.out.println(userDto);
         return new ResponseEntity(response,  (boolean) response.get("result") ? HttpStatus.OK : HttpStatus.NOT_FOUND);
     }
 

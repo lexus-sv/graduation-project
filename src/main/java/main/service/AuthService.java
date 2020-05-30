@@ -121,7 +121,8 @@ public class AuthService {
     }
 
     public User getCurrentUser(String session){
-        return userRepository.findById(sessions.get(session)).orElse(null);
+        return isAuthorized(session) ? userRepository.findById(sessions.get(session)).orElse(null)
+                : null;
     }
 
     public boolean isAuthorized(String session){

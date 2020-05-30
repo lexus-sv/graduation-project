@@ -1,22 +1,20 @@
 package main.service.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import main.api.request.AddPostRequest;
 import main.api.request.PostIdRequest;
 import main.api.response.PostModelType;
 import main.api.response.UserModelType;
-import main.api.response.ViewModelFactory;
-import main.api.response.post.PostBehavior;
 import main.api.response.post.PostWithCommentsAndTags;
 import main.api.response.post.Posts;
 import main.model.*;
 import main.repository.PostRepository;
+import main.repository.PostVoteRepository;
 import main.repository.TagRepository;
 import main.service.AuthService;
 import main.service.PostService;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 
@@ -27,6 +25,7 @@ import java.util.*;
 import static main.api.response.ViewModelFactory.*;
 
 @Service
+@Slf4j
 public class PostServiceImpl implements PostService {
 
     private final AuthService authService;
@@ -35,15 +34,18 @@ public class PostServiceImpl implements PostService {
 
     private final TagRepository tagRepository;
 
+    private final PostVoteRepository voteRepository;
+
     private final static SimpleDateFormat searchDateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private final static SimpleDateFormat dateSRDF = new SimpleDateFormat("dd.MM.yyyy hh:mm");
     private final static SimpleDateFormat defaultDF = new SimpleDateFormat("hh:mm dd.MM.yyyy");
 
     @Autowired
-    public PostServiceImpl(AuthService authService, PostRepository postRepository, TagRepository tagRepository) {
+    public PostServiceImpl(AuthService authService, PostRepository postRepository, TagRepository tagRepository, PostVoteRepository voteRepository) {
         this.authService = authService;
         this.postRepository = postRepository;
         this.tagRepository = tagRepository;
+        this.voteRepository = voteRepository;
     }
 
     @Override
@@ -81,6 +83,9 @@ public class PostServiceImpl implements PostService {
     @Override
     public PostWithCommentsAndTags findPostById(int id) {
         Post post = postRepository.findById(id).orElse(null);
+        if (post != null) {
+            post.setViewCount(post.getViewCount()+1);
+        }
         return post != null ? (PostWithCommentsAndTags) getSinglePost(post, defaultDF) : null;
     }
 
@@ -195,16 +200,86 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public HashMap<Object, Object> edit(int id, AddPostRequest request) {
-        return null;
+        HashMap<Object, Object> response = new HashMap<>();
+        response.put("result", false);
+        JSONObject errors = new JSONObject();
+        response.put("errors", errors);
+
+        int textLength = request.getText().trim().length();
+        int titleLength = request.getTitle().trim().length();
+        if (titleLength < 10) {
+            errors.put("title", "Заголовок должен быть не меньше 10 символов");
+        }
+        if (textLength < 200) {
+            errors.put("text", "Текст поста должен быть не менее 500 символов");
+        }
+        if (errors.isEmpty()) {
+            response.remove("errors");
+            response.put("result", true);
+            Post post = postRepository.findById(id).orElse(null);
+            post.setActive(request.isActive());
+            post.setModerationStatus(ModerationStatus.NEW);
+            post.setText(request.getText());
+            post.setTitle(request.getTitle());
+            try {
+                post.setTime(new SimpleDateFormat("yyyy-MM-dd hh:mm").parse(request.getTime()));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            List<TagToPost> tags = new ArrayList<>();
+            request.getTags().forEach(tag -> {
+                TagToPost ttp = new TagToPost();
+                ttp.setPost(post);
+                ttp.setTag(tagRepository.findFirstByName(tag));
+                tags.add(ttp);
+            });
+            post.setTags(tags);
+            postRepository.save(post);
+        }
+        return response;
     }
 
     @Override
     public HashMap<String, Boolean> like(PostIdRequest request) {
-        return null;
+        return makeVote(request, true);
     }
 
     @Override
     public HashMap<String, Boolean> dislike(PostIdRequest request) {
+        return makeVote(request, false);
+    }
+
+    private HashMap<String, Boolean> makeVote(PostIdRequest request, boolean value) {//value = true - like, value = false - dislike
+        HashMap<String, Boolean> response = new HashMap<>();
+        response.put("result", false);
+        Post post = postRepository.findById(request.getPostId()).orElse(null);
+        User user = authService.getCurrentUser(RequestContextHolder.currentRequestAttributes().getSessionId());
+        if (user != null) {
+            PostVote existingVote = voteRepository.findByUserAndPost(user, post).orElse(null);
+            if (existingVote == null) {
+                PostVote vote = new PostVote();
+                vote.setValue(value);
+                vote.setUser(user);
+                vote.setPost(post);
+                vote.setTime(new Date());
+                voteRepository.save(vote);
+                log.info("IN makeVote vote: {} saved, value: {}", vote, value);
+                response.put("result", true);
+                log.info("IN makeVote response: {}", response);
+                return response;
+            } else {//if vote for post with user already exists
+                if(existingVote.isValue() == value){
+                    return response;
+                } else {
+                    existingVote.setValue(value);
+                    voteRepository.save(existingVote);
+                    log.info("IN makeVote vote: {} saved, value inverted to: {}", existingVote, value);
+                    response.put("result", true);
+                }
+            }
+            log.info("final response: {}", response);
+            return response;
+        }
         return null;
     }
 

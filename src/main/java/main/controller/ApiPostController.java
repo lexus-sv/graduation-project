@@ -1,5 +1,6 @@
 package main.controller;
 
+import main.api.request.PostIdRequest;
 import main.api.response.post.PostWithCommentsAndTags;
 import main.api.response.post.Posts;
 import main.model.*;
@@ -94,5 +95,26 @@ public class ApiPostController {
     @PostMapping("/api/post")
     public ResponseEntity<?> post(@RequestBody AddPostRequest request) throws ParseException {
         return ResponseEntity.ok(postService.add(request));
+    }
+
+    @PutMapping("/api/post/{id}")
+    public ResponseEntity<?> edit(@PathVariable int id, AddPostRequest request){
+        return ResponseEntity.ok(postService.edit(id, request));
+    }
+
+    @PostMapping("/api/post/like")
+    public ResponseEntity likeVote(@RequestBody PostIdRequest request){
+        Object response = postService.like(request);
+        return response != null
+                ? ResponseEntity.ok(response)
+                : new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
+
+    @PostMapping("/api/post/dislike")
+    public ResponseEntity dislikeVote(@RequestBody PostIdRequest request){
+        Object response = postService.dislike(request);
+        return response != null
+                ? ResponseEntity.ok(response)
+                : new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 }
