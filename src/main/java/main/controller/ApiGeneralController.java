@@ -13,16 +13,15 @@ import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -30,7 +29,8 @@ import java.util.Random;
 @RestController
 public class ApiGeneralController {
 
-    private final String fileUploadPath = "./upload/";
+    private final String fileUploadFolder = "./upload/";
+    private final String outputPathFolder = "/image/";
 
     @Autowired
     private GlobalSettingsRepository settingsRepository;
@@ -66,30 +66,43 @@ public class ApiGeneralController {
         return new ResponseEntity(responseBody, HttpStatus.OK);
     }
 
-    ///////////////
     @PostMapping(value = "/api/image")
     public String uploadImage(@RequestParam MultipartFile image) {
         User user = authService.getCurrentUser(RequestContextHolder.currentRequestAttributes().getSessionId());
         if (user != null) {
-            if (!image.isEmpty()) {
-                try {
-                    String name = image.getOriginalFilename();
-                    String path = generatePath(2, 3);
-                    final String finalPath = path+name;
-                    byte[] bytes = image.getBytes();
-                    BufferedOutputStream stream =
-                            new BufferedOutputStream(new FileOutputStream(new File(finalPath)));
-                    stream.write(bytes);
-                    stream.close();
-                    return finalPath;
-                } catch (Exception e) {
-                    return "Вам не удалось загрузить  => " + e.getMessage();
-                }
+            return saveImage(image, generatePath(2, 3));
+        }
+        return null;
+    }
+
+    @GetMapping(value = "/image/{rootDir:[a-z]+}-{childDir:[a-z]+}-{childDirSecond:[a-z]+}/{filename}")
+    public ResponseEntity<byte[]> getImage(
+            @PathVariable String rootDir,
+            @PathVariable String childDir,
+            @PathVariable String childDirSecond,
+            @PathVariable String filename) throws IOException {
+        File file = new File(fileUploadFolder+rootDir+"/"+childDir+"/"+childDirSecond+"/"+filename);
+        return ResponseEntity.ok(Files.readAllBytes(file.toPath()));
+    }
+
+    private String saveImage(MultipartFile image, String hashPath) {
+        if (!image.isEmpty()) {
+            try {
+                String imageName = image.getOriginalFilename();
+                final String fileUploadPath = fileUploadFolder + hashPath + imageName;
+                byte[] bytes = image.getBytes();
+                BufferedOutputStream stream =
+                        new BufferedOutputStream(new FileOutputStream(new File(fileUploadPath)));
+                stream.write(bytes);
+                stream.close();
+
+                return getOutputPath(hashPath, imageName);
+            } catch (Exception e) {
+                return "Вам не удалось загрузить  => " + e.getMessage();
             }
         } else {
             return null;
         }
-        return null;
     }
 
     private String generatePath(int folderNameLength, int foldersAmount) {
@@ -103,8 +116,12 @@ public class ApiGeneralController {
             }
             path.append("/");
         }
-        File file = new File(fileUploadPath + path.toString());
+        File file = new File(fileUploadFolder + path.toString());
         file.mkdirs();
-        return fileUploadPath + path.toString();
+        return path.toString();
+    }
+
+    private String getOutputPath(String path, String fileName) {
+        return outputPathFolder + path.replace("/", "-").substring(0, path.length()-1) +"/"+ fileName;
     }
 }
