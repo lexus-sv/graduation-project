@@ -80,7 +80,7 @@ public class ApiPostController {
             @RequestParam(value = "status") String status
     ) {
         Posts posts = postService.getPostsForModeration(offset, limit, status);
-        return posts != null ? ResponseEntity.ok(posts) : new ResponseEntity(HttpStatus.FORBIDDEN);
+        return posts != null ? ResponseEntity.ok(posts) : new ResponseEntity(HttpStatus.UNAUTHORIZED);
     }
 
     @GetMapping("/api/post/my")

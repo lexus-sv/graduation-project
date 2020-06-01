@@ -36,8 +36,8 @@ public class CaptchaService {
     public Captcha createCaptcha() throws IOException {
         clearExpiredCaptcha();
 
-        String captcha = generateCaptchaString(CAPTCHA_SIZE);
-        String secret = generateCaptchaString(CAPTCHA_SIZE*2);
+        String captcha = generateRandomString(CAPTCHA_SIZE);
+        String secret = generateRandomString(CAPTCHA_SIZE*2);
         int width = CAPTCHA_SIZE*18, height = 35;
         BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.OPAQUE);
         Graphics graphics = bufferedImage.createGraphics();
@@ -64,7 +64,7 @@ public class CaptchaService {
     }
 
 
-    private String generateCaptchaString(int size){
+    public String generateRandomString(int size){
         StringBuilder captchaBuffer = new StringBuilder();
         Random random = new Random();
         while (captchaBuffer.length()<size){

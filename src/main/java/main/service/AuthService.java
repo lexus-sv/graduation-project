@@ -1,21 +1,27 @@
 package main.service;
 
+import main.model.ModerationStatus;
 import main.model.User;
 import main.api.request.RegisterUserRequest;
 import main.api.request.UserRequest;
 import main.api.response.ViewModelFactory;
+import main.repository.PostRepository;
 import main.repository.UserRepository;
+import main.service.impl.EmailServiceImpl;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 
-import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,12 +31,17 @@ public class AuthService {
     @Autowired
     private UserRepository userRepository;
     @Autowired
+    private PostRepository postRepository;
+    @Autowired
     private CaptchaService captchaService;
+    @Autowired
+    private EmailServiceImpl emailService;
 
     private HashMap<String, Integer> sessions = new HashMap<>();
     private final static String RESULT_KEY_NAME = "result";
     private final static String USER_KEY_NAME = "user";
     private final static String ERROR_KEY_NAME = "errors";
+    private final static String PASSWORD_RESTORE_PATH = "/login/change-password/";
     private final static Logger logger = LogManager.getLogger();
 
     public HashMap<Object, Object> authenticate(UserRequest userDto) {
@@ -42,7 +53,7 @@ public class AuthService {
         if (user != null && password.equals(user.getPassword())) {//success
             sessions.put(RequestContextHolder.currentRequestAttributes().getSessionId(), user.getId());
             responseBody.put(RESULT_KEY_NAME, true);
-            responseBody.put(USER_KEY_NAME, ViewModelFactory.getUserInfo(user));
+            responseBody.put(USER_KEY_NAME, ViewModelFactory.getFullInfoUser(user, postRepository.countByModerationStatusNot(ModerationStatus.ACCEPTED)));
         }
         logger.log(Level.INFO, "login user");
         return responseBody;
@@ -54,7 +65,7 @@ public class AuthService {
         if (sessions.containsKey(session)) {
             User user = userRepository.findById(sessions.get(session)).orElse(null);
             responseBody.put(RESULT_KEY_NAME, true);
-            responseBody.put(USER_KEY_NAME, ViewModelFactory.getUserInfo(user));
+            responseBody.put(USER_KEY_NAME, ViewModelFactory.getFullInfoUser(user, postRepository.countByModerationStatusNot(ModerationStatus.ACCEPTED)));
         }
         logger.log(Level.INFO, "Auth check with session "+session);
         return responseBody;
@@ -127,5 +138,42 @@ public class AuthService {
 
     public boolean isAuthorized(String session){
         return sessions.containsKey(session);
+    }
+
+    public HashMap<String, Boolean> sendEmail(String email){
+        HashMap<String, Boolean> response = new HashMap<>();
+        response.put(RESULT_KEY_NAME, false);
+
+        User user = userRepository.findByEmail(email).orElse(null);
+        if(user==null){
+            return response;
+        }
+        response.put(RESULT_KEY_NAME, true);
+
+        String hash = captchaService.generateRandomString(50);
+        user.setCode(hash);
+        userRepository.save(user);
+        String restoreLink = PASSWORD_RESTORE_PATH + hash;
+        String subject = "PASSWORD RESTORATION";
+
+        emailService.sendSimpleMessage(email, subject, restoreLink);
+        return response;
+    }
+    @Bean
+    public JavaMailSender getJavaMailSender() {
+        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+        mailSender.setHost("smtp.gmail.com");
+        mailSender.setPort(587);
+
+        mailSender.setUsername("devpubemailservice@gmail.com");
+        mailSender.setPassword("jkwgjhaxnzqhmmqi");
+
+        Properties props = mailSender.getJavaMailProperties();
+        props.put("mail.transport.protocol", "smtp");
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.debug", "true");
+
+        return mailSender;
     }
 }

@@ -1,5 +1,6 @@
 package main.repository;
 
+import main.api.request.CalendarObject;
 import main.model.ModerationStatus;
 import main.model.Post;
 import main.model.User;
@@ -13,14 +14,30 @@ import java.util.Optional;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Integer> {
-    Optional<Post> findByIdAndActiveTrueAndModerationStatus(int id, ModerationStatus moderationStatus);
     List<Post> findAllByActiveTrueAndModerationStatusAndTimeBefore(ModerationStatus moderationStatus, Date time);
+
     List<Post> findAllByTitleContainingAndModerationStatusAndTimeBeforeAndActiveTrue(String title, ModerationStatus moderationStatus, Date time);
-    List<Post> findAllByTimeAfterAndTimeBeforeAndActiveTrueAndModerationStatus(Date time, Date time2, ModerationStatus moderationStatus);
-    @Query("select p from Post p join TagToPost ttp on ttp.post.id=p.id join Tag t on t.id=ttp.tag.id where t.name like %?1% and p.active=true and p.moderationStatus=?2")
-    List<Post> findAllByTag(String tagName, ModerationStatus moderationStatus);
+
+    @Query("select p from Post p where function('date', p.time) = function('date', ?1) and p.moderationStatus=main.model.ModerationStatus.ACCEPTED and p.active = true ")
+    List<Post> findActiveByDate(String date);
+
+    @Query("select p from Post p join TagToPost ttp on ttp.post.id=p.id join Tag t on t.id=ttp.tag.id where t.name like %?1% and p.active=true and p.moderationStatus=main.model.ModerationStatus.ACCEPTED")
+    List<Post> findAllByTag(String tagName);
+
     List<Post> findAllByActiveTrueAndModeratorOrModerationStatusAndActiveTrue(User moderator, ModerationStatus moderationStatus);
+
     List<Post> findAllByActiveFalse();
+
+    int countByModerationStatusNot(ModerationStatus moderationStatus);
+
     List<Post> findAllByActiveTrueAndModerationStatus(ModerationStatus moderationStatus);
+
+    @Query("select new main.api.request.CalendarObject(function('date',p.time), count(p)) from Post p " +
+            "where function('year', p.time)=?1 and p.active=true and p.moderationStatus=main.model.ModerationStatus.ACCEPTED " +
+            "group by function('date', p.time) ")
+    List<CalendarObject> getCalendarQuery(int year);
+
+    @Query("select function('year', p.time) from Post p where p.active=true and p.moderationStatus=main.model.ModerationStatus.ACCEPTED group by function('year', p.time) having function('count', p)>0 ")
+    List<Long> getYears();
 
 }

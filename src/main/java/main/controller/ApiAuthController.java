@@ -1,6 +1,7 @@
 package main.controller;
 
 import main.api.request.RegisterUserRequest;
+import main.api.request.RestorePasswordRequest;
 import main.service.AuthService;
 import main.api.request.UserRequest;
 import main.service.CaptchaService;
@@ -48,5 +49,10 @@ public class ApiAuthController {
     @PostMapping(value = "register")
     public ResponseEntity<?> register(@RequestBody RegisterUserRequest userDto){
         return new ResponseEntity(authService.register(userDto), HttpStatus.OK);
+    }
+
+    @PostMapping(value = "restore")
+    public ResponseEntity<?> restorePassword(@RequestBody RestorePasswordRequest request){
+        return ResponseEntity.ok(authService.sendEmail(request.getEmail()));
     }
 }

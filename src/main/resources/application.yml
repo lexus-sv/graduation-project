@@ -3,4 +3,23 @@ spring.datasource.username: root
 spring.datasource.password: root
 spring.jpa.hibernate.ddl-auto: update
 
+spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: devpubemailservice@gmail.com
+    password: jkwgjhaxnzqhmmqi
+    properties.mail.smtp.auth: true
+    properties.mail.smtp.starttls: enable=true
+
 captcha.expirationTime: 3600000
+
+init.title: DevPub
+init.subtitle: Рассказы разработчиков
+init.phone: +7 903 666-44-55
+init.email: alakai20136@gmail.com
+init.copyright: Алексей Сухилин
+init.copyrightFrom: 2019
+
+
+

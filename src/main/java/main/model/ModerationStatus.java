@@ -7,7 +7,7 @@ public enum ModerationStatus {
 
     public static ModerationStatus getEqualStatus(String status){
         for(ModerationStatus ms : ModerationStatus.values()){
-            if (ms.toString().equalsIgnoreCase(status))
+            if (ms.toString().equalsIgnoreCase(status)|| ms.toString().toLowerCase().contains(status))
                 return ms;
         }
         return null;

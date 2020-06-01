@@ -3,7 +3,9 @@ package main.api.response;
 import main.model.PostVote;
 import main.api.response.post.*;
 import main.api.response.user.*;
+import main.repository.PostRepository;
 import org.jsoup.Jsoup;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -19,10 +21,6 @@ public class ViewModelFactory {
 
     public static PostBehavior getSinglePost(main.model.Post post, SimpleDateFormat sdf) {
         return getPostOfType(PostModelType.WITH_COMMENTS, post, getUserOfType(UserModelType.DEFAULT, post.getUser()), sdf);
-    }
-
-    public static UserBehavior getUserInfo(main.model.User user) {
-        return getUserOfType(UserModelType.FULL_INFO, user);
     }
 
     /**
@@ -61,6 +59,11 @@ public class ViewModelFactory {
         }
     }
 
+    public static UserFullInfo getFullInfoUser(main.model.User user, int postsForModeration){
+        return new UserFullInfo(user.getId(), user.getName(), user.getPhoto(), user.getEmail(),
+                user.isModerator(), user.getModeratedPosts().size()+postsForModeration, user.isModerator());
+    }
+
     /**
      * @param pt   post format for response
      * @param post post from database
@@ -84,7 +87,7 @@ public class ViewModelFactory {
             case WITH_COMMENTS:
                 List<Comment> comments = new ArrayList<>();
                 List<String> tags = new ArrayList<>();
-                post.getPostComments().forEach(pc -> comments.add(new Comment(pc.getId(), pc.getText(), sdf.format(pc.getTime()), getUserOfType(UserModelType.WITH_PHOTO, post.getUser()))));
+                post.getPostComments().forEach(pc -> comments.add(new Comment(pc.getId(), pc.getText(), sdf.format(pc.getTime()), getUserOfType(UserModelType.WITH_PHOTO, pc.getUser()))));
                 post.getTags().forEach(tag -> tags.add(tag.getTag().getName()));
                 return new PostWithCommentsAndTags(
                         post.getId(),

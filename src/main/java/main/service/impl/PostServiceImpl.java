@@ -1,5 +1,6 @@
 package main.service.impl;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import main.api.request.AddPostRequest;
 import main.api.request.PostIdRequest;
@@ -85,34 +86,26 @@ public class PostServiceImpl implements PostService {
         Post post = postRepository.findById(id).orElse(null);
         if (post != null) {
             post.setViewCount(post.getViewCount()+1);
+            postRepository.save(post);
         }
         return post != null ? (PostWithCommentsAndTags) getSinglePost(post, defaultDF) : null;
     }
 
+    @SneakyThrows
     @Override
     public Posts searchByDate(int offset, int limit, String date) {
-        GregorianCalendar calendar = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
-        Date fromDate = getDateOrNull(date);
-        if (date == null) return null;
+        if(isValidDate(date)){
+            List<Post> posts = postRepository.findActiveByDate(date);
+            posts = getElementsInRange(posts, offset, limit);
 
-        calendar.setTime(fromDate);
-        calendar.set(Calendar.SECOND, calendar.get(Calendar.SECOND) - 1);
-        fromDate = calendar.getTime();
-
-        calendar.set(Calendar.DAY_OF_MONTH, calendar.get(Calendar.DAY_OF_MONTH) + 1);
-        calendar.set(Calendar.SECOND, calendar.get(Calendar.SECOND) - 1);
-
-        Date toDate = calendar.getTime();
-
-        List<Post> posts = postRepository.findAllByTimeAfterAndTimeBeforeAndActiveTrueAndModerationStatus(fromDate, toDate, ModerationStatus.ACCEPTED);
-        posts = getElementsInRange(posts, offset, limit);
-
-        return getPosts(posts, PostModelType.DEFAULT, UserModelType.DEFAULT, dateSRDF);
+            return getPosts(posts, PostModelType.DEFAULT, UserModelType.DEFAULT, dateSRDF);
+        }
+        return null;
     }
 
     @Override
     public Posts searchByTag(int offset, int limit, String tagName) {
-        List<Post> posts = postRepository.findAllByTag(tagName.trim(), ModerationStatus.ACCEPTED);
+        List<Post> posts = postRepository.findAllByTag(tagName.trim());
         posts = getElementsInRange(posts, offset, limit);
         return getPosts(posts, PostModelType.DEFAULT, UserModelType.DEFAULT, dateSRDF);
     }
@@ -298,12 +291,12 @@ public class PostServiceImpl implements PostService {
         }
     }
 
-    private Date getDateOrNull(String s) {
+    private boolean isValidDate(String date) {
         try {
-            searchDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-            return searchDateFormat.parse(s);
+            searchDateFormat.parse(date);
+            return true;
         } catch (ParseException ex) {
-            return null;
+            return false;
         }
     }
 }
