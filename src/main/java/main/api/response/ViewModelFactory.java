@@ -109,6 +109,9 @@ public class ViewModelFactory {
     }
 
     public static Tags getTags(List<main.model.Tag> tags) {
+        if(tags.isEmpty())
+            return new Tags(new ArrayList<Tag>());
+
         List<Tag> formattedTags = new ArrayList<>();
         double size = 0;
         for (main.model.Tag tag : tags) {

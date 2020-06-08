@@ -1,5 +1,6 @@
 package main.service;
 
+import main.api.request.ChangePasswordRequest;
 import main.model.ModerationStatus;
 import main.model.User;
 import main.api.request.RegisterUserRequest;
@@ -159,6 +160,12 @@ public class AuthService {
         emailService.sendSimpleMessage(email, subject, restoreLink);
         return response;
     }
+
+    public HashMap<Object, Object> restorePassword(ChangePasswordRequest request){
+
+        return null;
+    }
+
     @Bean
     public JavaMailSender getJavaMailSender() {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();

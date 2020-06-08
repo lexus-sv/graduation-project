@@ -9,5 +9,8 @@ import java.util.List;
 @Repository
 public interface TagRepository extends JpaRepository<Tag, Integer> {
     List<Tag> findAllByNameContaining(String name);
+
     Tag findFirstByName(String name);
+
+    boolean existsByName(String name);
 }

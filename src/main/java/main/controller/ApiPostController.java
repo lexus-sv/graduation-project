@@ -93,12 +93,12 @@ public class ApiPostController {
     }
 
     @PostMapping("/api/post")
-    public ResponseEntity<?> post(@RequestBody AddPostRequest request) throws ParseException {
+    public ResponseEntity<?> add(@RequestBody AddPostRequest request) throws ParseException {
         return ResponseEntity.ok(postService.add(request));
     }
 
     @PutMapping("/api/post/{id}")
-    public ResponseEntity<?> edit(@PathVariable int id, AddPostRequest request){
+    public ResponseEntity<?> edit(@PathVariable int id, @RequestBody AddPostRequest request){
         return ResponseEntity.ok(postService.edit(id, request));
     }
 

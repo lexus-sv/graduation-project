@@ -2,23 +2,18 @@ package main.controller;
 
 import main.InitInfo;
 import main.api.request.AddCommentRequest;
-import main.api.request.CalendarObject;
 import main.api.request.ModerationRequest;
-import main.model.*;
+import main.model.User;
 import main.service.AuthService;
 import main.service.GeneralService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
 
 @RestController
 public class ApiGeneralController {

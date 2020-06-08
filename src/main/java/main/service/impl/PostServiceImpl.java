@@ -182,6 +182,11 @@ public class PostServiceImpl implements PostService {
             request.getTags().forEach(tag -> {
                 TagToPost ttp = new TagToPost();
                 ttp.setPost(post);
+                if(!tagRepository.existsByName(tag)){
+                    Tag t = new Tag();
+                    t.setName(tag);
+                    tagRepository.save(t);
+                }
                 ttp.setTag(tagRepository.findFirstByName(tag));
                 tags.add(ttp);
             });
@@ -223,6 +228,11 @@ public class PostServiceImpl implements PostService {
             request.getTags().forEach(tag -> {
                 TagToPost ttp = new TagToPost();
                 ttp.setPost(post);
+                if(!tagRepository.existsByName(tag)){
+                    Tag t = new Tag();
+                    t.setName(tag);
+                    tagRepository.save(t);
+                }
                 ttp.setTag(tagRepository.findFirstByName(tag));
                 tags.add(ttp);
             });
