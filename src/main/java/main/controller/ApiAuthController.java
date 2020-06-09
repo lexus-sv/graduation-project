@@ -61,9 +61,8 @@ public class ApiAuthController {
     }
 
     @GetMapping(value = "login/change-password")
-    public ResponseEntity<?> sendToken(@RequestParam(name = "token") String token){
+    public void sendToken(@RequestParam(name = "token") String token){
         System.out.println(token);
-        return ResponseEntity.ok("SOSO");
     }
 
     @PostMapping(value = "password")

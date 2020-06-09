@@ -140,12 +140,11 @@ public class GeneralServiceImpl implements GeneralService {
     }
 
     @Override
-    public void moderate(ModerationRequest request) {
-//        Post post = postRepository.findById(request.getPostId()).get();
-//        User user = authService.getCurrentUser(RequestContextHolder.currentRequestAttributes().getSessionId());
-//        post.setModerationStatus(ModerationStatus.getEqualStatus(request.getDecision()));
-//        post.setModerator(user);
-//        postRepository.save(post);
+    public void moderate(ModerationRequest request, User user) {
+        Post post = postRepository.findById(request.getPostId()).get();
+        post.setModerationStatus(ModerationStatus.getEqualStatus(request.getDecision()));
+        post.setModerator(user);
+        postRepository.save(post);
     }
 
     @Override

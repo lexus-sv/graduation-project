@@ -1,5 +1,6 @@
 package main.service;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import main.api.auth.request.PasswordUserRequest;
 import main.api.auth.response.*;
@@ -25,6 +26,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -89,6 +91,7 @@ public class AuthServiceImpl implements AuthService {
             String token = jwtTokenProvider.createToken(email);
             Cookie cookie = new Cookie("token", token);
             cookie.setMaxAge((int) jwtTokenProvider.getCookieMaxAge());
+            cookie.setPath("/");
             response.addCookie(cookie);
             log.info("IN login user {} has logged in", user);
             return new LoginUserResponse(true, ViewModelFactory.getFullInfoUser(user));
@@ -106,10 +109,12 @@ public class AuthServiceImpl implements AuthService {
         return result;
     }
 
+    @SneakyThrows
     @Override
     public AuthResponse logout(HttpServletResponse response) {
         Cookie cookie = new Cookie("token", null);
         cookie.setMaxAge(0);
+        cookie.setPath("/");
         response.addCookie(cookie);
         log.info("IN logout has been successfully made");
         return new ResultResponse(true);

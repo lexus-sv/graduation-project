@@ -23,15 +23,16 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
     @Query("select p from Post p join TagToPost ttp on ttp.post.id=p.id join Tag t on t.id=ttp.tag.id where t.name like %?1% and p.active=true and p.moderationStatus=main.model.ModerationStatus.ACCEPTED")
     List<Post> findAllByTag(String tagName);
 
-    List<Post> findAllByActiveTrueAndModeratorOrModerationStatusAndActiveTrue(User moderator, ModerationStatus moderationStatus);
+    @Query("select p from Post p where (p.moderationStatus=?2 and p.active=true) or (p.moderator=?1 and p.active=true and p.moderationStatus=?2)")
+    List<Post> findPostsForModeration(User moderator, ModerationStatus moderationStatus);
 
-    List<Post> findAllByActiveFalse();
+    List<Post> findAllByActiveFalseAndUser(User user);
 
     int countByModerationStatusNot(ModerationStatus moderationStatus);
 
-    List<Post> findAllByActiveTrueAndModerationStatus(ModerationStatus moderationStatus);
+    List<Post> findAllByActiveTrueAndUserAndModerationStatus(User user, ModerationStatus moderationStatus);
 
-    @Query("select new main.api.request.CalendarObject(function('date',p.time), count(p)) from Post p " +
+    @Query("select new main.api.general.calendar.CalendarObject(function('date',p.time), count(p)) from Post p " +
             "where function('year', p.time)=?1 and p.active=true and p.moderationStatus=main.model.ModerationStatus.ACCEPTED " +
             "group by function('date', p.time) ")
     List<CalendarObject> getCalendarQuery(int year);

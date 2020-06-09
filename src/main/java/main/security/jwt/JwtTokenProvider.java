@@ -64,12 +64,11 @@ public class JwtTokenProvider {
     }
 
     public String resolveToken(HttpServletRequest req) {
-        String token = Arrays
-                .stream(req.getCookies())
+        return req.getCookies() != null
+                ? Arrays.stream(req.getCookies())
                 .filter(cookie -> cookie.getName().equals("token"))
                 .findFirst()
-                .map(Cookie::getValue).orElse(null);
-        return token;
+                .map(Cookie::getValue).orElse(null) : null;
     }
 
     public boolean validateToken(String token) {

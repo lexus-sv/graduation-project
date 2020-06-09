@@ -1,16 +1,20 @@
 package main.controller;
 
 import main.InitInfo;
+import main.api.auth.response.ResultResponse;
 import main.api.post.comment.AddCommentRequest;
 import main.api.general.ModerationRequest;
+import main.model.User;
 import main.service.AuthServiceImpl;
 import main.service.GeneralService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 @RestController
 public class ApiGeneralController {
@@ -35,12 +39,8 @@ public class ApiGeneralController {
 
     @GetMapping("/api/settings")
     public ResponseEntity getSettings() {
-//        User user = authService.getCurrentUser(RequestContextHolder.currentRequestAttributes().getSessionId());
-//        if(user == null || !user.isModerator())
-//            return null;
-//
-//        HashMap<String, Boolean> settings = generalService.getSettings();
-        return ResponseEntity.ok(null);
+        HashMap<String, Boolean> settings = generalService.getSettings();
+        return ResponseEntity.ok(settings);
     }
 
     @GetMapping(value = "/api/tag")
@@ -50,13 +50,10 @@ public class ApiGeneralController {
         return ResponseEntity.ok(generalService.getTags(query));
     }
 
+    @Secured("ROLE_USER")
     @PostMapping(value = "/api/image")
     public String uploadImage(@RequestParam MultipartFile image) {
-//        User user = authService.getCurrentUser(RequestContextHolder.currentRequestAttributes().getSessionId());
-//        if (user != null) {
-//            return generalService.uploadImage(image);
-//        }
-        return null;
+        return generalService.uploadImage(image);
     }
 
     @GetMapping(value = "/image/{rootDir:[a-z]+}-{childDir:[a-z]+}-{childDirSecond:[a-z]+}/{filename}")
@@ -68,13 +65,12 @@ public class ApiGeneralController {
         return ResponseEntity.ok(generalService.getImageFromStorage(fileUploadFolder + rootDir + "/" + childDir + "/" + childDirSecond + "/" + filename));
     }
 
+    @Secured("ROLE_USER")
     @PostMapping(value = "/api/comment")
-    public ResponseEntity addComment(@RequestBody AddCommentRequest request) {
-//        User user = authService.getCurrentUser(RequestContextHolder.currentRequestAttributes().getSessionId());
-//        if (user != null) {
-//            return ResponseEntity.ok(generalService.addComment(request, user));
-//        }
-        return null;
+    public ResponseEntity addComment(
+            @CookieValue(value = "token", defaultValue = "invalid")  String token,
+            @RequestBody AddCommentRequest request) {
+        return ResponseEntity.ok(generalService.addComment(request, authService.getAuthorizedUser(token)));
     }
 
     @GetMapping("/api/calendar")
@@ -84,9 +80,13 @@ public class ApiGeneralController {
         return ResponseEntity.ok(generalService.getCalendar(year));
     }
 
+    @Secured("ROLE_MODERATOR")
     @PostMapping("/api/moderation")
-    public void moderation(@RequestBody ModerationRequest request){
-        generalService.moderate(request);
+    public ResponseEntity<?> moderation(
+            @CookieValue(value = "token", defaultValue = "invalid") String token,
+            @RequestBody ModerationRequest request) {
+        generalService.moderate(request, authService.getAuthorizedUser(token));
+        return ResponseEntity.ok(new ResultResponse(true));
     }
     //@TODO post api/moderation
     //@TODO post api/auth/restore

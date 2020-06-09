@@ -17,6 +17,6 @@ public interface GeneralService {
     String uploadImage(MultipartFile file);
     byte[] getImageFromStorage(String path);
     HashMap<Object, Object> addComment(AddCommentRequest request, User user);
-    void moderate(ModerationRequest request);
+    void moderate(ModerationRequest request, User user);
     CalendarResponse getCalendar(Integer year);
 }

@@ -12,7 +12,6 @@ import main.model.*;
 import main.repository.PostRepository;
 import main.repository.PostVoteRepository;
 import main.repository.TagRepository;
-import main.service.AuthServiceImpl;
 import main.service.PostService;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,8 +27,6 @@ import static main.api.ViewModelFactory.*;
 @Slf4j
 public class PostServiceImpl implements PostService {
 
-    private final AuthServiceImpl authService;
-
     private final PostRepository postRepository;
 
     private final TagRepository tagRepository;
@@ -41,8 +38,7 @@ public class PostServiceImpl implements PostService {
     private final static SimpleDateFormat defaultDF = new SimpleDateFormat("hh:mm dd.MM.yyyy");
 
     @Autowired
-    public PostServiceImpl(AuthServiceImpl authService, PostRepository postRepository, TagRepository tagRepository, PostVoteRepository voteRepository) {
-        this.authService = authService;
+    public PostServiceImpl(PostRepository postRepository, TagRepository tagRepository, PostVoteRepository voteRepository) {
         this.postRepository = postRepository;
         this.tagRepository = tagRepository;
         this.voteRepository = voteRepository;
@@ -84,7 +80,7 @@ public class PostServiceImpl implements PostService {
     public PostWithCommentsAndTags findPostById(int id) {
         Post post = postRepository.findById(id).orElse(null);
         if (post != null) {
-            post.setViewCount(post.getViewCount()+1);
+            post.setViewCount(post.getViewCount() + 1);
             postRepository.save(post);
         }
         return post != null ? (PostWithCommentsAndTags) getSinglePost(post, defaultDF) : null;
@@ -93,7 +89,7 @@ public class PostServiceImpl implements PostService {
     @SneakyThrows
     @Override
     public Posts searchByDate(int offset, int limit, String date) {
-        if(isValidDate(date)){
+        if (isValidDate(date)) {
             List<Post> posts = postRepository.findActiveByDate(date);
             posts = getElementsInRange(posts, offset, limit);
 
@@ -110,44 +106,36 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Posts getPostsForModeration(int offset, int limit, String status) {
-//        User user = authService.getCurrentUser(RequestContextHolder.currentRequestAttributes().getSessionId());
-//        if (user != null) {
-//            ModerationStatus moderationStatus = ModerationStatus.getEqualStatus(status);
-//            List<Post> posts = postRepository.findAllByActiveTrueAndModeratorOrModerationStatusAndActiveTrue(user, moderationStatus);
-//            posts = getElementsInRange(posts, offset, limit);
-//            return getPosts(posts, PostModelType.FOR_MODERATION, UserModelType.DEFAULT, dateSRDF);
-//        }
-        return null;
+    public Posts getPostsForModeration(int offset, int limit, String status, User user) {
+        ModerationStatus moderationStatus = ModerationStatus.getEqualStatus(status);
+        List<Post> posts = postRepository.findPostsForModeration(user, moderationStatus);
+        posts = getElementsInRange(posts, offset, limit);
+        return getPosts(posts, PostModelType.FOR_MODERATION, UserModelType.DEFAULT, dateSRDF);
     }
 
     @Override
-    public Posts getMyPosts(int offset, int limit, String status) {
-//        List<Post> posts = new ArrayList<>();
-//        User user = authService.getCurrentUser(RequestContextHolder.currentRequestAttributes().getSessionId());
-//        if (user != null) {
-//            switch (status) {
-//                case "inactive":
-//                    posts = postRepository.findAllByActiveFalse();
-//                    break;
-//                case "pending":
-//                    posts = postRepository.findAllByActiveTrueAndModerationStatus(ModerationStatus.NEW);
-//                    break;
-//                case "declined":
-//                    posts = postRepository.findAllByActiveTrueAndModerationStatus(ModerationStatus.DECLINED);
-//                    break;
-//                case "published":
-//                    posts = postRepository.findAllByActiveTrueAndModerationStatus(ModerationStatus.ACCEPTED);
-//                    break;
-//            }
-//            posts = getElementsInRange(posts, offset, limit);
-//            return getPosts(posts, PostModelType.DEFAULT, UserModelType.WITH_EMAIL, dateSRDF);
-//        }
-        return null;
+    public Posts getMyPosts(int offset, int limit, String status, User user) {
+        List<Post> posts = new ArrayList<>();
+        switch (status) {
+            case "inactive":
+                posts = postRepository.findAllByActiveFalseAndUser(user);
+                break;
+            case "pending":
+                posts = postRepository.findAllByActiveTrueAndUserAndModerationStatus(user, ModerationStatus.NEW);
+                break;
+            case "declined":
+                posts = postRepository.findAllByActiveTrueAndUserAndModerationStatus(user, ModerationStatus.DECLINED);
+                break;
+            case "published":
+                posts = postRepository.findAllByActiveTrueAndUserAndModerationStatus(user, ModerationStatus.ACCEPTED);
+                break;
+        }
+        posts = getElementsInRange(posts, offset, limit);
+        return getPosts(posts, PostModelType.DEFAULT, UserModelType.WITH_EMAIL, dateSRDF);
     }
 
     @Override
-    public HashMap<Object, Object> add(AddPostRequest request) {
+    public HashMap<Object, Object> add(AddPostRequest request, User user) {
         HashMap<Object, Object> response = new HashMap<>();
         response.put("result", false);
         JSONObject errors = new JSONObject();
@@ -176,12 +164,13 @@ public class PostServiceImpl implements PostService {
             }
             post.setViewCount(0);
             post.setModerator(null);
-//            post.setUser(authService.getCurrentUser(RequestContextHolder.currentRequestAttributes().getSessionId()));
+            log.info("IN addPost post has user {}", user);
+            post.setUser(user);
             List<TagToPost> tags = new ArrayList<>();
             request.getTags().forEach(tag -> {
                 TagToPost ttp = new TagToPost();
                 ttp.setPost(post);
-                if(!tagRepository.existsByName(tag)){
+                if (!tagRepository.existsByName(tag)) {
                     Tag t = new Tag();
                     t.setName(tag);
                     tagRepository.save(t);
@@ -227,7 +216,7 @@ public class PostServiceImpl implements PostService {
             request.getTags().forEach(tag -> {
                 TagToPost ttp = new TagToPost();
                 ttp.setPost(post);
-                if(!tagRepository.existsByName(tag)){
+                if (!tagRepository.existsByName(tag)) {
                     Tag t = new Tag();
                     t.setName(tag);
                     tagRepository.save(t);
@@ -242,47 +231,43 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public HashMap<String, Boolean> like(PostIdRequest request) {
-        return makeVote(request, true);
+    public HashMap<String, Boolean> like(PostIdRequest request, User user) {
+        return makeVote(request, true, user);
     }
 
     @Override
-    public HashMap<String, Boolean> dislike(PostIdRequest request) {
-        return makeVote(request, false);
+    public HashMap<String, Boolean> dislike(PostIdRequest request, User user) {
+        return makeVote(request, false, user);
     }
 
-    private HashMap<String, Boolean> makeVote(PostIdRequest request, boolean value) {//value = true - like, value = false - dislike
+    private HashMap<String, Boolean> makeVote(PostIdRequest request, boolean value, User user) {//value = true - like, value = false - dislike
         HashMap<String, Boolean> response = new HashMap<>();
         response.put("result", false);
         Post post = postRepository.findById(request.getPostId()).orElse(null);
-//        User user = authService.getCurrentUser(RequestContextHolder.currentRequestAttributes().getSessionId());
-//        if (user != null) {
-//            PostVote existingVote = voteRepository.findByUserAndPost(user, post).orElse(null);
-//            if (existingVote == null) {
-//                PostVote vote = new PostVote();
-//                vote.setValue(value);
-//                vote.setUser(user);
-//                vote.setPost(post);
-//                vote.setTime(new Date());
-//                voteRepository.save(vote);
-//                log.info("IN makeVote vote: {} saved, value: {}", vote, value);
-//                response.put("result", true);
-//                log.info("IN makeVote response: {}", response);
-//                return response;
-//            } else {//if vote for post with user already exists
-//                if(existingVote.isValue() == value){
-//                    return response;
-//                } else {
-//                    existingVote.setValue(value);
-//                    voteRepository.save(existingVote);
-//                    log.info("IN makeVote vote: {} saved, value inverted to: {}", existingVote, value);
-//                    response.put("result", true);
-//                }
-//            }
-//            log.info("final response: {}", response);
-//            return response;
-//        }
-        return null;
+        PostVote existingVote = voteRepository.findByUserAndPost(user, post).orElse(null);
+        if (existingVote == null) {
+            PostVote vote = new PostVote();
+            vote.setValue(value);
+            vote.setUser(user);
+            vote.setPost(post);
+            vote.setTime(new Date());
+            voteRepository.save(vote);
+            log.info("IN makeVote vote: {} saved, value: {}", vote, value);
+            response.put("result", true);
+            log.info("IN makeVote response: {}", response);
+            return response;
+        } else {//if vote for post with user already exists
+            if (existingVote.isValue() == value) {
+                return response;
+            } else {
+                existingVote.setValue(value);
+                voteRepository.save(existingVote);
+                log.info("IN makeVote vote: {} saved, value inverted to: {}", existingVote, value);
+                response.put("result", true);
+            }
+        }
+        log.info("final response: {}", response);
+        return response;
     }
 
 
