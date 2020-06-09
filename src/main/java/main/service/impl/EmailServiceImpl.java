@@ -19,4 +19,12 @@ public class EmailServiceImpl {
         message.setText(text);
         emailSender.send(message);
     }
+
+    public void sendPasswordRecovery(String to, String link){
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject("PasswordRecovery");
+        message.setText("Password recovery link: "+link);
+        emailSender.send(message);
+    }
 }

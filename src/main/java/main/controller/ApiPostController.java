@@ -3,27 +3,14 @@ package main.controller;
 import main.api.request.PostIdRequest;
 import main.api.response.post.PostWithCommentsAndTags;
 import main.api.response.post.Posts;
-import main.model.*;
 import main.api.request.AddPostRequest;
-import main.api.response.PostModelType;
-import main.api.response.UserModelType;
-import main.api.response.ViewModelFactory;
-import main.api.response.post.PostBehavior;
-import main.repository.PostRepository;
-import main.repository.TagRepository;
-import main.service.AuthService;
 import main.service.PostService;
-import main.service.impl.PostServiceImpl;
-import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.RequestContextHolder;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
 
 @RestController
 public class ApiPostController {

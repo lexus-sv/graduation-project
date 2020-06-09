@@ -14,6 +14,11 @@ spring:
 
 captcha.expirationTime: 3600000
 
+jwt.token.secret: jwttokensecret
+jwt:
+  token:
+    expirationTime: 3600000
+
 init.title: DevPub
 init.subtitle: Рассказы разработчиков
 init.phone: +7 903 666-44-55

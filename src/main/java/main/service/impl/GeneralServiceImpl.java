@@ -3,14 +3,13 @@ package main.service.impl;
 import lombok.SneakyThrows;
 import main.InitInfo;
 import main.api.request.AddCommentRequest;
-import main.api.request.CalendarObject;
 import main.api.request.ModerationRequest;
 import main.api.response.CalendarResponse;
 import main.api.response.Tags;
 import main.api.response.ViewModelFactory;
 import main.model.*;
 import main.repository.*;
-import main.service.AuthService;
+import main.service.AuthServiceImpl;
 import main.service.GeneralService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -45,7 +44,7 @@ public class GeneralServiceImpl implements GeneralService {
 
     private final GlobalSettingsRepository settingsRepository;
 
-    private final AuthService authService;
+    private final AuthServiceImpl authService;
 
     private final PostRepository postRepository;
 
@@ -55,7 +54,7 @@ public class GeneralServiceImpl implements GeneralService {
 
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-    public GeneralServiceImpl(GlobalSettingsRepository settingsRepository, AuthService authService, PostRepository postRepository, PostCommentRepository commentRepository, TagRepository tagRepository) {
+    public GeneralServiceImpl(GlobalSettingsRepository settingsRepository, AuthServiceImpl authService, PostRepository postRepository, PostCommentRepository commentRepository, TagRepository tagRepository) {
         this.settingsRepository = settingsRepository;
         this.authService = authService;
         this.postRepository = postRepository;
@@ -143,11 +142,11 @@ public class GeneralServiceImpl implements GeneralService {
 
     @Override
     public void moderate(ModerationRequest request) {
-        Post post = postRepository.findById(request.getPostId()).get();
-        User user = authService.getCurrentUser(RequestContextHolder.currentRequestAttributes().getSessionId());
-        post.setModerationStatus(ModerationStatus.getEqualStatus(request.getDecision()));
-        post.setModerator(user);
-        postRepository.save(post);
+//        Post post = postRepository.findById(request.getPostId()).get();
+//        User user = authService.getCurrentUser(RequestContextHolder.currentRequestAttributes().getSessionId());
+//        post.setModerationStatus(ModerationStatus.getEqualStatus(request.getDecision()));
+//        post.setModerator(user);
+//        postRepository.save(post);
     }
 
     @Override

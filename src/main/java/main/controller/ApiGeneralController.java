@@ -4,7 +4,7 @@ import main.InitInfo;
 import main.api.request.AddCommentRequest;
 import main.api.request.ModerationRequest;
 import main.model.User;
-import main.service.AuthService;
+import main.service.AuthServiceImpl;
 import main.service.GeneralService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -23,10 +23,10 @@ public class ApiGeneralController {
 
 
     private final GeneralService generalService;
-    private final AuthService authService;
+    private final AuthServiceImpl authService;
 
     @Autowired
-    public ApiGeneralController(GeneralService generalService, AuthService authService) {
+    public ApiGeneralController(GeneralService generalService, AuthServiceImpl authService) {
         this.generalService = generalService;
         this.authService = authService;
     }
@@ -38,12 +38,12 @@ public class ApiGeneralController {
 
     @GetMapping("/api/settings")
     public ResponseEntity getSettings() {
-        User user = authService.getCurrentUser(RequestContextHolder.currentRequestAttributes().getSessionId());
-        if(user == null || !user.isModerator())
-            return null;
-
-        HashMap<String, Boolean> settings = generalService.getSettings();
-        return ResponseEntity.ok(settings);
+//        User user = authService.getCurrentUser(RequestContextHolder.currentRequestAttributes().getSessionId());
+//        if(user == null || !user.isModerator())
+//            return null;
+//
+//        HashMap<String, Boolean> settings = generalService.getSettings();
+        return ResponseEntity.ok(null);
     }
 
     @GetMapping(value = "/api/tag")
@@ -55,10 +55,10 @@ public class ApiGeneralController {
 
     @PostMapping(value = "/api/image")
     public String uploadImage(@RequestParam MultipartFile image) {
-        User user = authService.getCurrentUser(RequestContextHolder.currentRequestAttributes().getSessionId());
-        if (user != null) {
-            return generalService.uploadImage(image);
-        }
+//        User user = authService.getCurrentUser(RequestContextHolder.currentRequestAttributes().getSessionId());
+//        if (user != null) {
+//            return generalService.uploadImage(image);
+//        }
         return null;
     }
 
@@ -73,10 +73,10 @@ public class ApiGeneralController {
 
     @PostMapping(value = "/api/comment")
     public ResponseEntity addComment(@RequestBody AddCommentRequest request) {
-        User user = authService.getCurrentUser(RequestContextHolder.currentRequestAttributes().getSessionId());
-        if (user != null) {
-            return ResponseEntity.ok(generalService.addComment(request, user));
-        }
+//        User user = authService.getCurrentUser(RequestContextHolder.currentRequestAttributes().getSessionId());
+//        if (user != null) {
+//            return ResponseEntity.ok(generalService.addComment(request, user));
+//        }
         return null;
     }
 

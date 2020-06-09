@@ -12,7 +12,7 @@ import main.model.*;
 import main.repository.PostRepository;
 import main.repository.PostVoteRepository;
 import main.repository.TagRepository;
-import main.service.AuthService;
+import main.service.AuthServiceImpl;
 import main.service.PostService;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +29,7 @@ import static main.api.response.ViewModelFactory.*;
 @Slf4j
 public class PostServiceImpl implements PostService {
 
-    private final AuthService authService;
+    private final AuthServiceImpl authService;
 
     private final PostRepository postRepository;
 
@@ -42,7 +42,7 @@ public class PostServiceImpl implements PostService {
     private final static SimpleDateFormat defaultDF = new SimpleDateFormat("hh:mm dd.MM.yyyy");
 
     @Autowired
-    public PostServiceImpl(AuthService authService, PostRepository postRepository, TagRepository tagRepository, PostVoteRepository voteRepository) {
+    public PostServiceImpl(AuthServiceImpl authService, PostRepository postRepository, TagRepository tagRepository, PostVoteRepository voteRepository) {
         this.authService = authService;
         this.postRepository = postRepository;
         this.tagRepository = tagRepository;
@@ -112,38 +112,38 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Posts getPostsForModeration(int offset, int limit, String status) {
-        User user = authService.getCurrentUser(RequestContextHolder.currentRequestAttributes().getSessionId());
-        if (user != null) {
-            ModerationStatus moderationStatus = ModerationStatus.getEqualStatus(status);
-            List<Post> posts = postRepository.findAllByActiveTrueAndModeratorOrModerationStatusAndActiveTrue(user, moderationStatus);
-            posts = getElementsInRange(posts, offset, limit);
-            return getPosts(posts, PostModelType.FOR_MODERATION, UserModelType.DEFAULT, dateSRDF);
-        }
+//        User user = authService.getCurrentUser(RequestContextHolder.currentRequestAttributes().getSessionId());
+//        if (user != null) {
+//            ModerationStatus moderationStatus = ModerationStatus.getEqualStatus(status);
+//            List<Post> posts = postRepository.findAllByActiveTrueAndModeratorOrModerationStatusAndActiveTrue(user, moderationStatus);
+//            posts = getElementsInRange(posts, offset, limit);
+//            return getPosts(posts, PostModelType.FOR_MODERATION, UserModelType.DEFAULT, dateSRDF);
+//        }
         return null;
     }
 
     @Override
     public Posts getMyPosts(int offset, int limit, String status) {
-        List<Post> posts = new ArrayList<>();
-        User user = authService.getCurrentUser(RequestContextHolder.currentRequestAttributes().getSessionId());
-        if (user != null) {
-            switch (status) {
-                case "inactive":
-                    posts = postRepository.findAllByActiveFalse();
-                    break;
-                case "pending":
-                    posts = postRepository.findAllByActiveTrueAndModerationStatus(ModerationStatus.NEW);
-                    break;
-                case "declined":
-                    posts = postRepository.findAllByActiveTrueAndModerationStatus(ModerationStatus.DECLINED);
-                    break;
-                case "published":
-                    posts = postRepository.findAllByActiveTrueAndModerationStatus(ModerationStatus.ACCEPTED);
-                    break;
-            }
-            posts = getElementsInRange(posts, offset, limit);
-            return getPosts(posts, PostModelType.DEFAULT, UserModelType.WITH_EMAIL, dateSRDF);
-        }
+//        List<Post> posts = new ArrayList<>();
+//        User user = authService.getCurrentUser(RequestContextHolder.currentRequestAttributes().getSessionId());
+//        if (user != null) {
+//            switch (status) {
+//                case "inactive":
+//                    posts = postRepository.findAllByActiveFalse();
+//                    break;
+//                case "pending":
+//                    posts = postRepository.findAllByActiveTrueAndModerationStatus(ModerationStatus.NEW);
+//                    break;
+//                case "declined":
+//                    posts = postRepository.findAllByActiveTrueAndModerationStatus(ModerationStatus.DECLINED);
+//                    break;
+//                case "published":
+//                    posts = postRepository.findAllByActiveTrueAndModerationStatus(ModerationStatus.ACCEPTED);
+//                    break;
+//            }
+//            posts = getElementsInRange(posts, offset, limit);
+//            return getPosts(posts, PostModelType.DEFAULT, UserModelType.WITH_EMAIL, dateSRDF);
+//        }
         return null;
     }
 
@@ -177,7 +177,7 @@ public class PostServiceImpl implements PostService {
             }
             post.setViewCount(0);
             post.setModerator(null);
-            post.setUser(authService.getCurrentUser(RequestContextHolder.currentRequestAttributes().getSessionId()));
+//            post.setUser(authService.getCurrentUser(RequestContextHolder.currentRequestAttributes().getSessionId()));
             List<TagToPost> tags = new ArrayList<>();
             request.getTags().forEach(tag -> {
                 TagToPost ttp = new TagToPost();
@@ -256,33 +256,33 @@ public class PostServiceImpl implements PostService {
         HashMap<String, Boolean> response = new HashMap<>();
         response.put("result", false);
         Post post = postRepository.findById(request.getPostId()).orElse(null);
-        User user = authService.getCurrentUser(RequestContextHolder.currentRequestAttributes().getSessionId());
-        if (user != null) {
-            PostVote existingVote = voteRepository.findByUserAndPost(user, post).orElse(null);
-            if (existingVote == null) {
-                PostVote vote = new PostVote();
-                vote.setValue(value);
-                vote.setUser(user);
-                vote.setPost(post);
-                vote.setTime(new Date());
-                voteRepository.save(vote);
-                log.info("IN makeVote vote: {} saved, value: {}", vote, value);
-                response.put("result", true);
-                log.info("IN makeVote response: {}", response);
-                return response;
-            } else {//if vote for post with user already exists
-                if(existingVote.isValue() == value){
-                    return response;
-                } else {
-                    existingVote.setValue(value);
-                    voteRepository.save(existingVote);
-                    log.info("IN makeVote vote: {} saved, value inverted to: {}", existingVote, value);
-                    response.put("result", true);
-                }
-            }
-            log.info("final response: {}", response);
-            return response;
-        }
+//        User user = authService.getCurrentUser(RequestContextHolder.currentRequestAttributes().getSessionId());
+//        if (user != null) {
+//            PostVote existingVote = voteRepository.findByUserAndPost(user, post).orElse(null);
+//            if (existingVote == null) {
+//                PostVote vote = new PostVote();
+//                vote.setValue(value);
+//                vote.setUser(user);
+//                vote.setPost(post);
+//                vote.setTime(new Date());
+//                voteRepository.save(vote);
+//                log.info("IN makeVote vote: {} saved, value: {}", vote, value);
+//                response.put("result", true);
+//                log.info("IN makeVote response: {}", response);
+//                return response;
+//            } else {//if vote for post with user already exists
+//                if(existingVote.isValue() == value){
+//                    return response;
+//                } else {
+//                    existingVote.setValue(value);
+//                    voteRepository.save(existingVote);
+//                    log.info("IN makeVote vote: {} saved, value inverted to: {}", existingVote, value);
+//                    response.put("result", true);
+//                }
+//            }
+//            log.info("final response: {}", response);
+//            return response;
+//        }
         return null;
     }
 

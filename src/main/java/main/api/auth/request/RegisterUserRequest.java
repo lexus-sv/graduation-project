@@ -1,4 +1,4 @@
-package main.api.request;
+package main.api.auth.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

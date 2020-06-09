@@ -1,17 +1,17 @@
-package main.api.request;
+package main.api.auth.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class UserRequest {
+public class LoginUserRequest {
     @JsonProperty("e_mail")
     private String email;
 
     private String password;
 
-    public UserRequest() {
+    public LoginUserRequest() {
     }
 
-    public UserRequest(String email, String password) {
+    public LoginUserRequest(String email, String password) {
         this.email = email;
         this.password = password;
     }
