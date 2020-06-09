@@ -1,14 +1,13 @@
 package main.service;
 
 import main.InitInfo;
-import main.api.request.AddCommentRequest;
-import main.api.request.ModerationRequest;
-import main.api.response.CalendarResponse;
-import main.api.response.Tags;
+import main.api.post.comment.AddCommentRequest;
+import main.api.general.ModerationRequest;
+import main.api.general.calendar.CalendarResponse;
+import main.api.post.tag.Tags;
 import main.model.User;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.persistence.criteria.CriteriaBuilder;
 import java.util.HashMap;
 
 public interface GeneralService {

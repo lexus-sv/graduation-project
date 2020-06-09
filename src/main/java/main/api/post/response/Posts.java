@@ -1,6 +1,5 @@
-package main.api.response.post;
+package main.api.post.response;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

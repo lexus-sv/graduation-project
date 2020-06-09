@@ -3,7 +3,7 @@ package main.api.auth.response;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import main.api.response.user.UserFullInfo;
+import main.api.user.UserFullInfo;
 
 @Data
 @AllArgsConstructor

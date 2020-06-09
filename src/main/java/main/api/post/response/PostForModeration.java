@@ -1,22 +1,17 @@
-
-package main.api.response;
-
+package main.api.post.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import main.api.response.user.UserBehavior;
-
-import java.util.Date;
+import main.api.user.UserBehavior;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Comment {
-
+public class PostForModeration implements PostBehavior {
     private int id;
-    private String text;
     private String time;
     private UserBehavior user;
-
+    private String title;
+    private String announce;
 }

@@ -1,4 +1,4 @@
-package main.api.response;
+package main.api.user;
 
 public enum UserModelType {
     FULL_INFO,

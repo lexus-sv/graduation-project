@@ -2,18 +2,17 @@ package main.service.impl;
 
 import lombok.SneakyThrows;
 import main.InitInfo;
-import main.api.request.AddCommentRequest;
-import main.api.request.ModerationRequest;
-import main.api.response.CalendarResponse;
-import main.api.response.Tags;
-import main.api.response.ViewModelFactory;
+import main.api.post.comment.AddCommentRequest;
+import main.api.general.ModerationRequest;
+import main.api.general.calendar.CalendarResponse;
+import main.api.post.tag.Tags;
+import main.api.ViewModelFactory;
 import main.model.*;
 import main.repository.*;
 import main.service.AuthServiceImpl;
 import main.service.GeneralService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedOutputStream;

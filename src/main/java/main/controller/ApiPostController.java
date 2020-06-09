@@ -1,9 +1,9 @@
 package main.controller;
 
-import main.api.request.PostIdRequest;
-import main.api.response.post.PostWithCommentsAndTags;
-import main.api.response.post.Posts;
-import main.api.request.AddPostRequest;
+import main.api.post.PostIdRequest;
+import main.api.post.response.PostWithCommentsAndTags;
+import main.api.post.response.Posts;
+import main.api.post.AddPostRequest;
 import main.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

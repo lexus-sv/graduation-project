@@ -1,5 +1,5 @@
 
-package main.api.response;
+package main.api.post.tag;
 
 public class Tag {
 

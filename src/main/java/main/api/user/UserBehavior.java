@@ -1,4 +1,4 @@
-package main.api.response.user;
+package main.api.user;
 
 public interface UserBehavior {
 }

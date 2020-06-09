@@ -1,6 +1,6 @@
 package main.repository;
 
-import main.api.request.CalendarObject;
+import main.api.general.calendar.CalendarObject;
 import main.model.ModerationStatus;
 import main.model.Post;
 import main.model.User;
@@ -10,7 +10,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Integer> {

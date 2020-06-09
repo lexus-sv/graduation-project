@@ -1,5 +1,5 @@
 
-package main.api.response.user;
+package main.api.user;
 
 public class UserFullInfo implements UserBehavior {
 

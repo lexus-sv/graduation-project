@@ -1,9 +1,9 @@
 package main.service;
 
-import main.api.request.AddPostRequest;
-import main.api.request.PostIdRequest;
-import main.api.response.post.PostWithCommentsAndTags;
-import main.api.response.post.Posts;
+import main.api.post.AddPostRequest;
+import main.api.post.PostIdRequest;
+import main.api.post.response.PostWithCommentsAndTags;
+import main.api.post.response.Posts;
 
 import java.util.HashMap;
 

@@ -1,7 +1,7 @@
 package main.service;
 
 import main.model.CaptchaCode;
-import main.api.response.Captcha;
+import main.api.auth.response.CaptchaResponse;
 import main.repository.CaptchaCodeRepository;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -33,7 +33,7 @@ public class CaptchaService {
     private final static int FONT_SIZE = 20;
     private final static String ALLOWED_SYMBOLS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
 
-    public Captcha createCaptcha() throws IOException {
+    public CaptchaResponse createCaptcha() throws IOException {
         clearExpiredCaptcha();
 
         String captcha = generateRandomString(CAPTCHA_SIZE);
@@ -60,7 +60,7 @@ public class CaptchaService {
         captchaCodeRepository.save(captchaCode);
 
         LogManager.getLogger().log(Level.INFO, "Captcha generated " + captchaCode);
-        return new Captcha(secret, DATA_IMAGE+encoded);
+        return new CaptchaResponse(secret, DATA_IMAGE+encoded);
     }
 
 

@@ -1,10 +1,10 @@
-package main.api.response;
+package main.api.auth.response;
 
-public class Captcha {
+public class CaptchaResponse {
     private String secret;
     private String image;
 
-    public Captcha(String secret, String image) {
+    public CaptchaResponse(String secret, String image) {
         this.secret = secret;
         this.image = image;
     }

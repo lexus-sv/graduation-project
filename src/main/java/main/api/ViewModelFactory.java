@@ -1,11 +1,13 @@
-package main.api.response;
+package main.api;
 
+import main.api.post.PostModelType;
+import main.api.post.comment.Comment;
+import main.api.post.response.*;
+import main.api.post.tag.Tag;
+import main.api.post.tag.Tags;
+import main.api.user.*;
 import main.model.PostVote;
-import main.api.response.post.*;
-import main.api.response.user.*;
-import main.repository.PostRepository;
 import org.jsoup.Jsoup;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;

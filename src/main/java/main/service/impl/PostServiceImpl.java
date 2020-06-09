@@ -2,12 +2,12 @@ package main.service.impl;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import main.api.request.AddPostRequest;
-import main.api.request.PostIdRequest;
-import main.api.response.PostModelType;
-import main.api.response.UserModelType;
-import main.api.response.post.PostWithCommentsAndTags;
-import main.api.response.post.Posts;
+import main.api.post.AddPostRequest;
+import main.api.post.PostIdRequest;
+import main.api.post.PostModelType;
+import main.api.user.UserModelType;
+import main.api.post.response.PostWithCommentsAndTags;
+import main.api.post.response.Posts;
 import main.model.*;
 import main.repository.PostRepository;
 import main.repository.PostVoteRepository;
@@ -17,13 +17,12 @@ import main.service.PostService;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.context.request.RequestContextHolder;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static main.api.response.ViewModelFactory.*;
+import static main.api.ViewModelFactory.*;
 
 @Service
 @Slf4j

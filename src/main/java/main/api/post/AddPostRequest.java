@@ -1,4 +1,4 @@
-package main.api.request;
+package main.api.post;
 
 import java.util.List;
 

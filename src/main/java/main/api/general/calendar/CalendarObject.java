@@ -1,4 +1,4 @@
-package main.api.request;
+package main.api.general.calendar;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

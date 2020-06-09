@@ -1,19 +1,16 @@
 package main.controller;
 
 import main.InitInfo;
-import main.api.request.AddCommentRequest;
-import main.api.request.ModerationRequest;
-import main.model.User;
+import main.api.post.comment.AddCommentRequest;
+import main.api.general.ModerationRequest;
 import main.service.AuthServiceImpl;
 import main.service.GeneralService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.HashMap;
 
 @RestController
 public class ApiGeneralController {

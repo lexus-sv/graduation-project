@@ -1,12 +1,11 @@
-package main.api.response.post;
+package main.api.post.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import main.api.response.Comment;
-import main.api.response.user.UserBehavior;
+import main.api.post.comment.Comment;
+import main.api.user.UserBehavior;
 
-import java.util.Date;
 import java.util.List;
 
 @Data

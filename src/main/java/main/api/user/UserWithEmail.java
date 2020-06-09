@@ -1,13 +1,13 @@
+package main.api.user;
 
-package main.api.response.user;
-
-public class User implements UserBehavior {
-
+public class UserWithEmail implements UserBehavior {
     private int id;
-
     private String name;
 
-    public User(int id, String name) {
+    public UserWithEmail() {
+    }
+
+    public UserWithEmail(int id, String name) {
         this.id = id;
         this.name = name;
     }
@@ -27,5 +27,4 @@ public class User implements UserBehavior {
     public void setName(String name) {
         this.name = name;
     }
-
 }
