@@ -42,6 +42,7 @@ public class JwtTokenProvider {
     public String createToken(String email) {
 
         Claims claims = Jwts.claims().setSubject(email);
+        System.out.println("validityInMilliseconds"+validityInMilliseconds);
 
         Date now = new Date();
         Date validity = new Date(now.getTime() + validityInMilliseconds);
@@ -74,8 +75,10 @@ public class JwtTokenProvider {
     public boolean validateToken(String token) {
         try {
             Jws<Claims> claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token);
-
-            return !claims.getBody().getExpiration().before(new Date());
+            if (claims.getBody().getExpiration().before(new Date())) {
+                return false;
+            }
+            return true;
         } catch (JwtException | IllegalArgumentException e) {
             throw new JwtAuthenticationException("JWT token is expired or invalid");
         }

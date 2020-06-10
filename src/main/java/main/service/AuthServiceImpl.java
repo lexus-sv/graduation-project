@@ -25,8 +25,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -44,6 +42,7 @@ public class AuthServiceImpl implements AuthService {
     @Autowired
     private EmailServiceImpl emailService;
 
+    private final CookieManager cookieManager;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final BCryptPasswordEncoder passwordEncoder;
@@ -53,6 +52,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Autowired
     public AuthServiceImpl(AuthenticationManager authenticationManager, JwtTokenProvider jwtTokenProvider, BCryptPasswordEncoder passwordEncoder, UserService userService) {
+        this.cookieManager = CookieManager.getInstance();
         this.authenticationManager = authenticationManager;
         this.jwtTokenProvider = jwtTokenProvider;
         this.passwordEncoder = passwordEncoder;
@@ -84,15 +84,12 @@ public class AuthServiceImpl implements AuthService {
             String email = request.getEmail();
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, request.getPassword()));
             User user = userService.findByEmail(email);
-
             if (user == null) {
                 throw new UsernameNotFoundException("User with username: " + email + " not found");
             }
             String token = jwtTokenProvider.createToken(email);
-            Cookie cookie = new Cookie("token", token);
-            cookie.setMaxAge((int) jwtTokenProvider.getCookieMaxAge());
-            cookie.setPath("/");
-            response.addCookie(cookie);
+            cookieManager.addCookie(response, token, (int) (jwtTokenProvider.getCookieMaxAge()-1)/1000);
+            //to seconds, -1 for evading jwt expiration exception because of cookie with token expiring faster then jwt
             log.info("IN login user {} has logged in", user);
             return new LoginUserResponse(true, ViewModelFactory.getFullInfoUser(user));
         } catch (AuthenticationException e) {
@@ -112,10 +109,7 @@ public class AuthServiceImpl implements AuthService {
     @SneakyThrows
     @Override
     public AuthResponse logout(HttpServletResponse response) {
-        Cookie cookie = new Cookie("token", null);
-        cookie.setMaxAge(0);
-        cookie.setPath("/");
-        response.addCookie(cookie);
+        cookieManager.deleteCookie(response);
         log.info("IN logout has been successfully made");
         return new ResultResponse(true);
     }

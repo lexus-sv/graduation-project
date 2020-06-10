@@ -17,7 +17,7 @@ captcha.expirationTime: 3600000
 jwt.token.secret: jwttokensecret
 jwt:
   token:
-    expirationTime: 3600000
+    expirationTime: 604800000
 
 init.title: DevPub
 init.subtitle: Рассказы разработчиков

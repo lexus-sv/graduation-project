@@ -76,7 +76,7 @@ public class GeneralServiceImpl implements GeneralService {
     @Override
     public Tags getTags(String query) {
         List<Tag> tagList = query.length() != 0
-                ? tagRepository.findAllByNameContaining(query)
+                ? tagRepository.getRelevantTags(query)
                 : tagRepository.findAll();
         return ViewModelFactory.getTags(tagList);
     }
