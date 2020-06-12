@@ -1,26 +1,27 @@
 package main.controller;
 
 import main.InitInfo;
+import main.api.MyStatisticsResponse;
+import main.api.ProfileEditRequest;
 import main.api.auth.response.ResultResponse;
 import main.api.post.comment.AddCommentRequest;
 import main.api.general.ModerationRequest;
-import main.model.User;
 import main.service.AuthServiceImpl;
 import main.service.GeneralService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
+import javax.validation.Valid;
 import java.util.HashMap;
 
 @RestController
 public class ApiGeneralController {
 
     private final String fileUploadFolder = "./upload/";
-    private final String outputPathFolder = "/image/";
 
 
     private final GeneralService generalService;
@@ -61,8 +62,8 @@ public class ApiGeneralController {
             @PathVariable String rootDir,
             @PathVariable String childDir,
             @PathVariable String childDirSecond,
-            @PathVariable String filename) throws IOException {
-        return ResponseEntity.ok(generalService.getImageFromStorage(fileUploadFolder + rootDir + "/" + childDir + "/" + childDirSecond + "/" + filename));
+            @PathVariable String filename){
+        return ResponseEntity.ok(generalService.getImageFromStorage(rootDir + "/" + childDir + "/" + childDirSecond + "/" + filename));
     }
 
     @Secured("ROLE_USER")
@@ -88,13 +89,41 @@ public class ApiGeneralController {
         generalService.moderate(request, authService.getAuthorizedUser(token));
         return ResponseEntity.ok(new ResultResponse(true));
     }
-    //@TODO post api/moderation
-    //@TODO post api/auth/restore
-    //@TODO post api/auth/password
-    //@TODO post api/profile/my
-    //@TODO get api/statistics/my
-    //@TODO get api/statistics/all
-    //@TODO put api/settings
-    //@TODO change all return null on ResponseEntity.unauthorized(null)
 
+    @Secured("ROLE_USER")
+    @PostMapping(value = "/api/profile/my", headers = {"Content-Type=application/json"})
+    public ResponseEntity<?> editProfile(
+            @CookieValue(name = "token", defaultValue = "invalid") String token,
+            @RequestBody ProfileEditRequest request){
+        System.out.println(request);
+        return ResponseEntity.ok(generalService.editProfile(request, authService.getAuthorizedUser(token)));
+    }
+
+
+    @Secured("ROLE_USER")
+    @PostMapping(value = "/api/profile/my", headers = "Content-Type=multipart/form-data")
+    public ResponseEntity<?> editProfileWithPhoto(
+            @CookieValue(name = "token", defaultValue = "invalid") String token,
+            @Valid @ModelAttribute ProfileEditRequest request){
+        System.out.println(((MultipartFile)request.getPhoto()).getOriginalFilename());
+        return ResponseEntity.ok(generalService.editProfile(request, authService.getAuthorizedUser(token)));
+    }
+
+    @Secured("ROLE_USER")
+    @GetMapping("/api/statistics/my")
+    public ResponseEntity<?> getMyStatistics(@CookieValue(name = "token", defaultValue = "invalid") String token){
+        return ResponseEntity.ok(generalService.getMyStatistics(authService.getAuthorizedUser(token)));
+    }
+
+    @GetMapping("/api/statistics/all")
+    public ResponseEntity<MyStatisticsResponse> getGlobalStatistics(){
+        return ResponseEntity.ok(generalService.getAllStatistics());
+    }
+
+    @Secured("ROLE_MODERATOR")
+    @PutMapping("/api/settings")
+    public ResponseEntity<?> editSettings(@RequestBody HashMap<String, Boolean> request){
+        generalService.editSettings(request);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
 }

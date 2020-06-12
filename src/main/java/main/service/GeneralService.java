@@ -1,6 +1,10 @@
 package main.service;
 
 import main.InitInfo;
+import main.api.MyStatisticsResponse;
+import main.api.ProfileEditRequest;
+import main.api.ProfileEditResponse;
+import main.api.SettingsRequest;
 import main.api.post.comment.AddCommentRequest;
 import main.api.general.ModerationRequest;
 import main.api.general.calendar.CalendarResponse;
@@ -12,11 +16,26 @@ import java.util.HashMap;
 
 public interface GeneralService {
     InitInfo init();
+
     HashMap<String, Boolean> getSettings();
+
     Tags getTags(String query);
+
     String uploadImage(MultipartFile file);
+
     byte[] getImageFromStorage(String path);
+
     HashMap<Object, Object> addComment(AddCommentRequest request, User user);
+
     void moderate(ModerationRequest request, User user);
+
     CalendarResponse getCalendar(Integer year);
+
+    ProfileEditResponse editProfile(ProfileEditRequest request, User user);
+
+    MyStatisticsResponse getMyStatistics(User user);
+
+    MyStatisticsResponse getAllStatistics();
+
+    void editSettings(HashMap<String, Boolean> request);
 }

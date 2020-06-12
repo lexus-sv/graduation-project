@@ -1,5 +1,8 @@
 package main.service;
 
+import main.api.MyStatisticsResponse;
+import main.api.ProfileEditRequest;
+import main.api.ProfileEditResponse;
 import main.api.auth.request.RegisterUserRequest;
 import main.api.auth.response.AuthResponse;
 import main.model.User;
@@ -20,4 +23,8 @@ public interface UserService {
     AuthResponse register(RegisterUserRequest request);
 
     User save(User user);
+
+    ProfileEditResponse edit(ProfileEditRequest request, User user);
+
+    MyStatisticsResponse getUserStatistics(User user);
 }

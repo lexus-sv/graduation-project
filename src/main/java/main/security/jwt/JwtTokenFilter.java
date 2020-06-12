@@ -36,7 +36,6 @@ public class JwtTokenFilter extends GenericFilterBean {
             chain.doFilter(request, response);
         } catch (JwtAuthenticationException ex) {
             log.warn(ex.getMessage());
-//            new CustomEntryPoint().commence((HttpServletRequest) request,(HttpServletResponse) response, ex);
         }
     }
 }

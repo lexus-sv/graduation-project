@@ -42,7 +42,6 @@ public class JwtTokenProvider {
     public String createToken(String email) {
 
         Claims claims = Jwts.claims().setSubject(email);
-        System.out.println("validityInMilliseconds"+validityInMilliseconds);
 
         Date now = new Date();
         Date validity = new Date(now.getTime() + validityInMilliseconds);

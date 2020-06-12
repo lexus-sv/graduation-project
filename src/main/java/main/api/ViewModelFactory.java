@@ -96,7 +96,7 @@ public class ViewModelFactory {
                         sdf.format(post.getTime()),
                         user,
                         post.getTitle(),
-                        Jsoup.parse(post.getText()).text(),
+                        post.getText(),
                         (int) post.getPostVotes().stream().filter(PostVote::isValue).count(),
                         (int) post.getPostVotes().stream().filter(vote -> !vote.isValue()).count(),
                         post.getPostComments().size(),

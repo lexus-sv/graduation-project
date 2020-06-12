@@ -2,9 +2,7 @@ package main.service.impl;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import main.api.post.AddPostRequest;
-import main.api.post.PostIdRequest;
-import main.api.post.PostModelType;
+import main.api.post.*;
 import main.api.user.UserModelType;
 import main.api.post.response.PostWithCommentsAndTags;
 import main.api.post.response.Posts;
@@ -13,8 +11,8 @@ import main.repository.PostRepository;
 import main.repository.PostVoteRepository;
 import main.repository.TagRepository;
 import main.service.PostService;
-import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
@@ -26,6 +24,11 @@ import static main.api.ViewModelFactory.*;
 @Service
 @Slf4j
 public class PostServiceImpl implements PostService {
+
+    @Value("${post.title.minLength}")
+    private int postTitleLength;
+    @Value("${post.text.minLength}")
+    private int postTextLength;
 
     private final PostRepository postRepository;
 
@@ -50,14 +53,22 @@ public class PostServiceImpl implements PostService {
         posts = getElementsInRange(posts, offset, limit);
         switch (mode) {
             case "recent":
-                posts.sort(Comparator.comparing(Post::getTime).reversed());
+                posts.sort(Comparator
+                        .comparing(Post::getTime)
+                        .reversed());
                 break;
             case "popular":
-                posts.sort(Comparator.comparing(post -> (post.getPostComments().size())));
+                posts.sort(Comparator.comparing(post -> (post
+                        .getPostComments()
+                        .size())));
                 Collections.reverse(posts);
                 break;
             case "best":
-                posts.sort(Comparator.comparingLong(o -> o.getPostVotes().stream().filter(PostVote::isValue).count()));
+                posts.sort(Comparator.comparingLong(o -> o
+                        .getPostVotes()
+                        .stream()
+                        .filter(PostVote::isValue)
+                        .count()));
                 Collections.reverse(posts);
                 break;
             case "early":
@@ -78,24 +89,26 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PostWithCommentsAndTags findPostById(int id) {
-        Post post = postRepository.findById(id).orElse(null);
-        if (post != null) {
-            post.setViewCount(post.getViewCount() + 1);
-            postRepository.save(post);
-        }
-        return post != null ? (PostWithCommentsAndTags) getSinglePost(post, defaultDF) : null;
+        Post post = postRepository
+                .findById(id)
+                .orElse(null);
+        if (post == null)
+            throw new NullPointerException("Post with id " + id + " was not found");
+        post.setViewCount(post.getViewCount() + 1);
+        postRepository.save(post);
+        return (PostWithCommentsAndTags) getSinglePost(post, defaultDF);
     }
 
     @SneakyThrows
     @Override
     public Posts searchByDate(int offset, int limit, String date) {
-        if (isValidDate(date)) {
-            List<Post> posts = postRepository.findActiveByDate(date);
-            posts = getElementsInRange(posts, offset, limit);
+        if (!isValidDate(date))
+            throw new IllegalArgumentException("Invalid date");
 
-            return getPosts(posts, PostModelType.DEFAULT, UserModelType.DEFAULT, dateSRDF);
-        }
-        return null;
+        List<Post> posts = postRepository.findActiveByDate(date);
+        posts = getElementsInRange(posts, offset, limit);
+
+        return getPosts(posts, PostModelType.DEFAULT, UserModelType.DEFAULT, dateSRDF);
     }
 
     @Override
@@ -135,27 +148,28 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public HashMap<Object, Object> add(AddPostRequest request, User user) {
-        HashMap<Object, Object> response = new HashMap<>();
-        response.put("result", false);
-        JSONObject errors = new JSONObject();
-        response.put("errors", errors);
+    public PostAddResponse add(AddPostRequest request, User user) {
+        PostAddResponse response = new PostAddResponse();
+        PostResponseErrors errors = new PostResponseErrors();
 
         int textLength = request.getText().trim().length();
         int titleLength = request.getTitle().trim().length();
-        if (titleLength < 10) {
-            errors.put("title", "Заголовок должен быть не меньше 10 символов");
+        System.out.println(postTextLength + " " +postTitleLength);
+        if (titleLength < postTitleLength) {
+            response.setResult(false);
+            errors.setTitle("Заголовок должен быть не меньше"+postTitleLength+ "символов");
         }
-        if (textLength < 500) {
-            errors.put("text", "Текст поста должен быть не менее 500 символов");
+        if (textLength < postTextLength) {
+            response.setResult(false);
+            errors.setText("Текст поста должен быть не менее"+postTextLength+"символов");
         }
-        if (errors.isEmpty()) {
-            response.remove("errors");
-            response.put("result", true);
+        if (errors.getText() == null && errors.getTitle() == null) {
+            response.setResult(true);
             Post post = new Post();
             post.setActive(request.isActive());
             post.setModerationStatus(ModerationStatus.NEW);
             post.setText(request.getText());
+            log.info("IN addPost text: {}", request.getText());
             post.setTitle(request.getTitle());
             try {
                 post.setTime(new SimpleDateFormat("yyyy-MM-dd hh:mm").parse(request.getTime()));
@@ -166,42 +180,30 @@ public class PostServiceImpl implements PostService {
             post.setModerator(null);
             log.info("IN addPost post has user {}", user);
             post.setUser(user);
-            List<TagToPost> tags = new ArrayList<>();
-            request.getTags().forEach(tag -> {
-                TagToPost ttp = new TagToPost();
-                ttp.setPost(post);
-                if (!tagRepository.existsByName(tag)) {
-                    Tag t = new Tag();
-                    t.setName(tag);
-                    tagRepository.save(t);
-                }
-                ttp.setTag(tagRepository.findFirstByName(tag));
-                tags.add(ttp);
-            });
-            post.setTags(tags);
-            postRepository.save(post);
+            addTagsAndSave(request, post);
+        } else {
+            response.setErrors(errors);
         }
         return response;
     }
 
     @Override
-    public HashMap<Object, Object> edit(int id, AddPostRequest request) {
-        HashMap<Object, Object> response = new HashMap<>();
-        response.put("result", false);
-        JSONObject errors = new JSONObject();
-        response.put("errors", errors);
+    public PostAddResponse edit(int id, AddPostRequest request) {
+        PostAddResponse response = new PostAddResponse();
+        PostResponseErrors errors = new PostResponseErrors();
 
         int textLength = request.getText().trim().length();
         int titleLength = request.getTitle().trim().length();
-        if (titleLength < 10) {
-            errors.put("title", "Заголовок должен быть не меньше 10 символов");
+        if (titleLength < postTitleLength) {
+            response.setResult(false);
+            errors.setTitle("Заголовок должен быть не меньше"+postTitleLength+" символов");
         }
-        if (textLength < 200) {
-            errors.put("text", "Текст поста должен быть не менее 500 символов");
+        if (textLength < postTextLength) {
+            response.setResult(false);
+            errors.setText("Текст поста должен быть не менее"+ postTextLength+ "символов");
         }
-        if (errors.isEmpty()) {
-            response.remove("errors");
-            response.put("result", true);
+        if (errors.getText() != null && errors.getTitle() != null) {
+            response.setResult(true);
             Post post = postRepository.findById(id).orElse(null);
             post.setActive(request.isActive());
             post.setModerationStatus(ModerationStatus.NEW);
@@ -212,20 +214,9 @@ public class PostServiceImpl implements PostService {
             } catch (ParseException e) {
                 e.printStackTrace();
             }
-            List<TagToPost> tags = new ArrayList<>();
-            request.getTags().forEach(tag -> {
-                TagToPost ttp = new TagToPost();
-                ttp.setPost(post);
-                if (!tagRepository.existsByName(tag)) {
-                    Tag t = new Tag();
-                    t.setName(tag);
-                    tagRepository.save(t);
-                }
-                ttp.setTag(tagRepository.findFirstByName(tag));
-                tags.add(ttp);
-            });
-            post.setTags(tags);
-            postRepository.save(post);
+            addTagsAndSave(request, post);
+        } else {
+            response.setErrors(errors);
         }
         return response;
     }
@@ -270,6 +261,25 @@ public class PostServiceImpl implements PostService {
         return response;
     }
 
+
+    private void addTagsAndSave(AddPostRequest request, Post post) {
+        List<TagToPost> tags = new ArrayList<>();
+        request
+                .getTags()
+                .forEach(tag -> {
+                    TagToPost ttp = new TagToPost();
+                    ttp.setPost(post);
+                    if (!tagRepository.existsByName(tag)) {
+                        Tag t = new Tag();
+                        t.setName(tag);
+                        tagRepository.save(t);
+                    }
+                    ttp.setTag(tagRepository.findFirstByName(tag));
+                    tags.add(ttp);
+                });
+        post.setTags(tags);
+        postRepository.save(post);
+    }
 
     private List<Post> getElementsInRange(List<Post> list, int offset, int limit) {
         int lastElementIndex = offset + limit;

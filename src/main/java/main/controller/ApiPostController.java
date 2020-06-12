@@ -95,7 +95,6 @@ public class ApiPostController {
     @Secured("ROLE_USER")
     @PostMapping("/api/post")
     public ResponseEntity<?> add(@CookieValue(value = "token", defaultValue = "invalid") String token, @RequestBody AddPostRequest request) throws ParseException {
-        System.out.println("auth user = "+ authService.getAuthorizedUser(token));
         return ResponseEntity.ok(postService.add(request, authService.getAuthorizedUser(token)));
     }
 

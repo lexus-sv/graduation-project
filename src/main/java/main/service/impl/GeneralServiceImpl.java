@@ -1,28 +1,30 @@
 package main.service.impl;
 
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import main.InitInfo;
+import main.api.*;
 import main.api.post.comment.AddCommentRequest;
 import main.api.general.ModerationRequest;
 import main.api.general.calendar.CalendarResponse;
 import main.api.post.tag.Tags;
-import main.api.ViewModelFactory;
 import main.model.*;
 import main.repository.*;
 import main.service.AuthServiceImpl;
 import main.service.GeneralService;
+import main.service.ImageService;
+import main.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.nio.file.Files;
+import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
+@Slf4j
 public class GeneralServiceImpl implements GeneralService {
 
     @Value("${init.title}")
@@ -38,12 +40,7 @@ public class GeneralServiceImpl implements GeneralService {
     @Value("${init.copyrightFrom}")
     private String copyrightFrom;
 
-    private final String fileUploadFolder = "./upload/";
-    private final String outputPathFolder = "/image/";
-
     private final GlobalSettingsRepository settingsRepository;
-
-    private final AuthServiceImpl authService;
 
     private final PostRepository postRepository;
 
@@ -51,14 +48,20 @@ public class GeneralServiceImpl implements GeneralService {
 
     private final TagRepository tagRepository;
 
+    private final ImageService imageService;
+
+    private final UserService userService;
+
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-    public GeneralServiceImpl(GlobalSettingsRepository settingsRepository, AuthServiceImpl authService, PostRepository postRepository, PostCommentRepository commentRepository, TagRepository tagRepository) {
+    @Autowired
+    public GeneralServiceImpl(GlobalSettingsRepository settingsRepository, AuthServiceImpl authService, PostRepository postRepository, PostCommentRepository commentRepository, TagRepository tagRepository, ImageService imageService, UserService userService) {
         this.settingsRepository = settingsRepository;
-        this.authService = authService;
         this.postRepository = postRepository;
         this.commentRepository = commentRepository;
         this.tagRepository = tagRepository;
+        this.userService = userService;
+        this.imageService = new ImageService();
     }
 
     @Override
@@ -70,6 +73,7 @@ public class GeneralServiceImpl implements GeneralService {
     public HashMap<String, Boolean> getSettings() {
         HashMap<String, Boolean> result = new HashMap<>();
         settingsRepository.findAll().forEach(s -> result.put(s.getCode(), s.isValue()));
+        log.info("IN getSettings settings {}", result);
         return result;
     }
 
@@ -83,14 +87,13 @@ public class GeneralServiceImpl implements GeneralService {
 
     @Override
     public String uploadImage(MultipartFile image) {
-        return saveImage(image, generatePath(2, 3));
+        return imageService.saveImage(image, false);
     }
 
     @SneakyThrows
     @Override
     public byte[] getImageFromStorage(String path) {
-        File file = new File(path);
-        return Files.readAllBytes(file.toPath());
+        return imageService.getImageFromStorage(path);
     }
 
     @Override
@@ -101,7 +104,7 @@ public class GeneralServiceImpl implements GeneralService {
             PostComment parentComment = commentRepository.findById(request.getParentId()).orElse(null);
 
             if (parentComment == null || post == null) {
-                return null;
+                throw new NullPointerException("post or parentComment cant be null");
             }
 
             if (request.getText().length() < 5) {
@@ -160,43 +163,31 @@ public class GeneralServiceImpl implements GeneralService {
         );
     }
 
-    private String saveImage(MultipartFile image, String hashPath) {
-        if (!image.isEmpty()) {
-            try {
-                String imageName = image.getOriginalFilename();
-                final String fileUploadPath = fileUploadFolder + hashPath + imageName;
-                byte[] bytes = image.getBytes();
-                BufferedOutputStream stream =
-                        new BufferedOutputStream(new FileOutputStream(new File(fileUploadPath)));
-                stream.write(bytes);
-                stream.close();
-
-                return getOutputPath(hashPath, imageName);
-            } catch (Exception e) {
-                return "Вам не удалось загрузить  => " + e.getMessage();
-            }
-        } else {
-            return null;
-        }
+    @Override
+    public ProfileEditResponse editProfile(ProfileEditRequest request, User user) {
+        return userService.edit(request, user);
     }
 
-    private String generatePath(int folderNameLength, int foldersAmount) {
-        String symbols = "abcdefghijklmnopqrstuv";
-        StringBuilder path = new StringBuilder();
-        Random random = new Random();
-        for (int i = 0; i < foldersAmount; i++) {
-            for (int j = 0; j < folderNameLength; j++) {
-                int index = (int) (random.nextFloat() * symbols.length());
-                path.append(symbols, index, index + 1);
-            }
-            path.append("/");
-        }
-        File file = new File(fileUploadFolder + path.toString());
-        file.mkdirs();
-        return path.toString();
+    @Override
+    public MyStatisticsResponse getMyStatistics(User user) {
+        return userService.getUserStatistics(user);
     }
 
-    private String getOutputPath(String path, String fileName) {
-        return outputPathFolder + path.replace("/", "-").substring(0, path.length() - 1) + "/" + fileName;
+    @Override
+    public MyStatisticsResponse getAllStatistics() {
+        log.info("getAllStatistics successfully");
+        return settingsRepository.getGlobalStats();
+    }
+
+    @Override
+    public void editSettings(HashMap<String, Boolean> request)  {
+        request.forEach((key,value)->{
+            GlobalSettings setting = settingsRepository.findByCode(key);
+            if(value!=null){
+                setting.setValue(value);
+                settingsRepository.save(setting);
+            }
+        });
+        log.info("IN editSettings settings : {} have been applied", request);
     }
 }

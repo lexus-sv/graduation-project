@@ -14,10 +14,16 @@ spring:
 
 captcha.expirationTime: 3600000
 
-jwt.token.secret: jwttokensecret
 jwt:
   token:
     expirationTime: 604800000
+    secret: jwttokensecret
+
+post:
+  title:
+    minLength: 10
+  text:
+    minLength: 200
 
 init.title: DevPub
 init.subtitle: Рассказы разработчиков

@@ -14,7 +14,6 @@ import java.io.IOException;
 public class CookieManager {
 
     private static CookieManager instance;
-    private final String redirectDefaultPath="/posts/recent";
 
     public CookieManager() {
     }
