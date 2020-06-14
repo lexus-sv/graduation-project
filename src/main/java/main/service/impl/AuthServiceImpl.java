@@ -2,15 +2,15 @@ package main.service.impl;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import main.api.ViewModelFactory;
+import main.api.auth.request.LoginUserRequest;
 import main.api.auth.request.PasswordUserRequest;
+import main.api.auth.request.RegisterUserRequest;
 import main.api.auth.response.*;
 import main.api.auth.response.error.PassError;
 import main.api.auth.response.error.RegisterError;
 import main.model.ModerationStatus;
 import main.model.User;
-import main.api.auth.request.RegisterUserRequest;
-import main.api.auth.request.LoginUserRequest;
-import main.api.ViewModelFactory;
 import main.repository.PostRepository;
 import main.security.jwt.JwtAuthenticationException;
 import main.security.jwt.JwtTokenProvider;

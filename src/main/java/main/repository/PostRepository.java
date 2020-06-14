@@ -1,6 +1,6 @@
 package main.repository;
 
-import main.api.MyStatisticsResponse;
+import main.api.general.StatisticsResponse;
 import main.api.general.calendar.CalendarObject;
 import main.model.ModerationStatus;
 import main.model.Post;
@@ -41,11 +41,11 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
     @Query("select function('year', p.time) from Post p where p.active=true and p.moderationStatus=main.model.ModerationStatus.ACCEPTED group by function('year', p.time) having function('count', p)>0 ")
     List<Long> getYears();
 
-    @Query("select new main.api.MyStatisticsResponse(" +
+    @Query("select new main.api.general.StatisticsResponse(" +
             "count(p), " +
             "(select count(pv) from PostVote pv where pv.value=true), " +
             "(select count(pv) from PostVote pv where pv.value=false), " +
             "(select sum(p.viewCount) from Post p), " +
             "function('date_format', max(p.time), '%k:%i %d.%m.%Y')) from Post p")
-    MyStatisticsResponse getGlobalStats();
+    StatisticsResponse getGlobalStats();
 }

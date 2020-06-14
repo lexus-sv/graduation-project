@@ -3,21 +3,31 @@ package main.service.impl;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import main.InitInfo;
-import main.api.*;
-import main.api.post.comment.AddCommentRequest;
+import main.api.ViewModelFactory;
 import main.api.general.ModerationRequest;
+import main.api.general.StatisticsResponse;
 import main.api.general.calendar.CalendarResponse;
+import main.api.general.profile.ProfileEditRequest;
+import main.api.general.profile.ProfileEditResponse;
+import main.api.post.comment.AddCommentRequest;
 import main.api.post.tag.Tags;
 import main.model.*;
-import main.repository.*;
-import main.service.*;
+import main.repository.PostCommentRepository;
+import main.repository.PostRepository;
+import main.repository.TagRepository;
+import main.service.GeneralService;
+import main.service.ImageService;
+import main.service.Settings;
+import main.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -179,13 +189,13 @@ public class GeneralServiceImpl implements GeneralService {
     }
 
     @Override
-    public MyStatisticsResponse getMyStatistics(User user)
+    public StatisticsResponse getMyStatistics(User user)
     {
         return userService.getUserStatistics(user);
     }
 
     @Override
-    public MyStatisticsResponse getAllStatistics()
+    public StatisticsResponse getAllStatistics()
     {
         if (settings.getSetting(STATISTICS_IS_PUBLIC_KEY))
         {

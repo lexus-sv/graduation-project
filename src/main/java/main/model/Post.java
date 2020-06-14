@@ -1,6 +1,5 @@
 package main.model;
 
-import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;

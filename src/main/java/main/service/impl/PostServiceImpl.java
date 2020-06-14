@@ -3,9 +3,9 @@ package main.service.impl;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import main.api.post.*;
-import main.api.user.UserModelType;
 import main.api.post.response.PostWithCommentsAndTags;
 import main.api.post.response.Posts;
+import main.api.user.UserModelType;
 import main.model.*;
 import main.repository.PostRepository;
 import main.repository.PostVoteRepository;
@@ -20,7 +20,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static main.api.ViewModelFactory.*;
+import static main.api.ViewModelFactory.getPosts;
+import static main.api.ViewModelFactory.getSinglePost;
 
 @Service
 @Slf4j
@@ -55,7 +56,6 @@ public class PostServiceImpl implements PostService {
     @Override
     public Posts getAll(int offset, int limit, String mode) {
         List<Post> posts = postRepository.findAllByActiveTrueAndModerationStatusAndTimeBefore(ModerationStatus.ACCEPTED, new Date());
-        posts = getElementsInRange(posts, offset, limit);
         switch (mode) {
             case "recent":
                 posts.sort(Comparator
@@ -80,7 +80,7 @@ public class PostServiceImpl implements PostService {
                 posts.sort(Comparator.comparing(Post::getTime));
                 break;
         }
-        return getPosts(posts, PostModelType.DEFAULT, UserModelType.DEFAULT, defaultDF);
+        return getPosts(posts,  limit, offset, PostModelType.DEFAULT, UserModelType.DEFAULT, defaultDF);
     }
 
     @Override
@@ -88,8 +88,7 @@ public class PostServiceImpl implements PostService {
         List<Post> posts = query.length() > 0
                 ? postRepository.findAllByTitleContainingOrTextContainingAndModerationStatusAndTimeBeforeAndActiveTrue(query, query, ModerationStatus.ACCEPTED, new Date())
                 : postRepository.findAllByActiveTrueAndModerationStatusAndTimeBefore(ModerationStatus.ACCEPTED, new Date());
-        posts = getElementsInRange(posts, offset, limit);
-        return getPosts(posts, PostModelType.DEFAULT, UserModelType.DEFAULT, defaultDF);
+        return getPosts(posts, limit, offset, PostModelType.DEFAULT, UserModelType.DEFAULT, defaultDF);
     }
 
     @Override
@@ -111,24 +110,20 @@ public class PostServiceImpl implements PostService {
             throw new IllegalArgumentException("Invalid date");
 
         List<Post> posts = postRepository.findActiveByDate(date);
-        posts = getElementsInRange(posts, offset, limit);
-
-        return getPosts(posts, PostModelType.DEFAULT, UserModelType.DEFAULT, dateSRDF);
+        return getPosts(posts, limit, offset, PostModelType.DEFAULT, UserModelType.DEFAULT, dateSRDF);
     }
 
     @Override
     public Posts searchByTag(int offset, int limit, String tagName) {
         List<Post> posts = postRepository.findAllByTag(tagName.trim());
-        posts = getElementsInRange(posts, offset, limit);
-        return getPosts(posts, PostModelType.DEFAULT, UserModelType.DEFAULT, dateSRDF);
+        return getPosts(posts, limit, offset, PostModelType.DEFAULT, UserModelType.DEFAULT, dateSRDF);
     }
 
     @Override
     public Posts getPostsForModeration(int offset, int limit, String status, User user) {
         ModerationStatus moderationStatus = ModerationStatus.getEqualStatus(status);
         List<Post> posts = postRepository.findPostsForModeration(user, moderationStatus);
-        posts = getElementsInRange(posts, offset, limit);
-        return getPosts(posts, PostModelType.FOR_MODERATION, UserModelType.DEFAULT, dateSRDF);
+        return getPosts(posts, limit, offset, PostModelType.FOR_MODERATION, UserModelType.DEFAULT, dateSRDF);
     }
 
     @Override
@@ -148,8 +143,7 @@ public class PostServiceImpl implements PostService {
                 posts = postRepository.findAllByActiveTrueAndUserAndModerationStatus(user, ModerationStatus.ACCEPTED);
                 break;
         }
-        posts = getElementsInRange(posts, offset, limit);
-        return getPosts(posts, PostModelType.DEFAULT, UserModelType.WITH_EMAIL, dateSRDF);
+        return getPosts(posts, limit, offset, PostModelType.DEFAULT, UserModelType.WITH_EMAIL, dateSRDF);
     }
 
     @Override
@@ -295,20 +289,6 @@ public class PostServiceImpl implements PostService {
                 });
         post.setTags(tags);
         postRepository.save(post);
-    }
-
-    private List<Post> getElementsInRange(List<Post> list, int offset, int limit) {
-        int lastElementIndex = offset + limit;
-        int lastPostIndex = list.size();
-        if (lastPostIndex >= offset) {//если есть элементы входящие в нужный диапазон
-            if (lastElementIndex <= lastPostIndex) {//если все элементы с нужными индексами есть в листе
-                return list.subList(offset, lastElementIndex);
-            } else {//если не хватает элементов, то в посты записываем остаток, считая от offset
-                return list.subList(offset, lastPostIndex);
-            }
-        } else {
-            return new ArrayList<>();
-        }
     }
 
     private boolean isValidDate(String date) {

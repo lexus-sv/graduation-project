@@ -1,7 +1,5 @@
 package main.model;
 
-import org.hibernate.annotations.Type;
-
 import javax.persistence.*;
 import java.util.Date;
 

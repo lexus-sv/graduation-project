@@ -1,15 +1,15 @@
 package main.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
-import main.api.MyStatisticsResponse;
-import main.api.ProfileEditRequest;
-import main.api.ProfileEditResponse;
-import main.api.ProfileErrors;
 import main.api.auth.request.RegisterUserRequest;
 import main.api.auth.response.AuthResponse;
 import main.api.auth.response.RegisterErrorResponse;
 import main.api.auth.response.ResultResponse;
 import main.api.auth.response.error.RegisterError;
+import main.api.general.StatisticsResponse;
+import main.api.general.profile.ProfileEditRequest;
+import main.api.general.profile.ProfileEditResponse;
+import main.api.general.profile.ProfileErrors;
 import main.model.User;
 import main.repository.UserRepository;
 import main.service.CaptchaService;
@@ -193,7 +193,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public MyStatisticsResponse getUserStatistics(User user)
+    public StatisticsResponse getUserStatistics(User user)
     {
         log.info("IN getMyStatistics user {} got his stats", user);
         return userRepository.getStatisticsByUser(user);

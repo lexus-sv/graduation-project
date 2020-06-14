@@ -1,13 +1,13 @@
 package main.controller;
 
 import main.InitInfo;
-import main.api.MyStatisticsResponse;
-import main.api.ProfileEditRequest;
 import main.api.auth.response.ResultResponse;
-import main.api.post.comment.AddCommentRequest;
 import main.api.general.ModerationRequest;
-import main.service.impl.AuthServiceImpl;
+import main.api.general.StatisticsResponse;
+import main.api.general.profile.ProfileEditRequest;
+import main.api.post.comment.AddCommentRequest;
 import main.service.GeneralService;
+import main.service.impl.AuthServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -116,7 +116,7 @@ public class ApiGeneralController {
     }
 
     @GetMapping("/api/statistics/all")
-    public ResponseEntity<MyStatisticsResponse> getGlobalStatistics(){
+    public ResponseEntity<StatisticsResponse> getGlobalStatistics(){
         return ResponseEntity.ok(generalService.getAllStatistics());
     }
 

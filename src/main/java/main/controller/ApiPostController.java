@@ -1,21 +1,18 @@
 package main.controller;
 
+import main.api.post.AddPostRequest;
 import main.api.post.PostIdRequest;
 import main.api.post.response.PostWithCommentsAndTags;
 import main.api.post.response.Posts;
-import main.api.post.AddPostRequest;
 import main.service.AuthService;
 import main.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import java.text.ParseException;
-import java.util.Arrays;
 
 @RestController
 public class ApiPostController {

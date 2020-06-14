@@ -1,7 +1,6 @@
-package main.api;
+package main.api.general.profile;
 
 import lombok.Data;
-import org.springframework.web.multipart.MultipartFile;
 
 @Data
 public class ProfileEditRequest {

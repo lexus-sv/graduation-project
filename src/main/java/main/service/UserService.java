@@ -1,13 +1,12 @@
 package main.service;
 
-import main.api.MyStatisticsResponse;
-import main.api.ProfileEditRequest;
-import main.api.ProfileEditResponse;
 import main.api.auth.request.RegisterUserRequest;
 import main.api.auth.response.AuthResponse;
+import main.api.general.StatisticsResponse;
+import main.api.general.profile.ProfileEditRequest;
+import main.api.general.profile.ProfileEditResponse;
 import main.model.User;
 
-import java.util.HashMap;
 import java.util.List;
 
 public interface UserService {
@@ -26,5 +25,5 @@ public interface UserService {
 
     ProfileEditResponse edit(ProfileEditRequest request, User user);
 
-    MyStatisticsResponse getUserStatistics(User user);
+    StatisticsResponse getUserStatistics(User user);
 }

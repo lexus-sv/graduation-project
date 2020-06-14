@@ -1,4 +1,4 @@
-package main.api;
+package main.api.general.profile;
 
 import lombok.Data;
 

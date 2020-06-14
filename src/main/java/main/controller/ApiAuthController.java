@@ -1,12 +1,12 @@
 package main.controller;
 
+import main.api.auth.request.LoginUserRequest;
 import main.api.auth.request.PasswordUserRequest;
 import main.api.auth.request.RegisterUserRequest;
 import main.api.auth.request.RestorePasswordRequest;
 import main.api.auth.response.AuthResponse;
-import main.service.impl.AuthServiceImpl;
-import main.api.auth.request.LoginUserRequest;
 import main.service.CaptchaService;
+import main.service.impl.AuthServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

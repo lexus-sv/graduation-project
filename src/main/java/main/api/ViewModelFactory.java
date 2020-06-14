@@ -17,12 +17,15 @@ public class ViewModelFactory {
 
     private static final int ANNOUNCE_SIZE = 300;
 
-    public static Posts getPosts(List<main.model.Post> posts, PostModelType pt, UserModelType ut, SimpleDateFormat sdf) {
-        return createPosts(posts, pt, ut, sdf);
+    public static Posts getPosts(List<main.model.Post> posts, int limit, int offset, PostModelType pt, UserModelType ut, SimpleDateFormat sdf)
+    {
+        return createPosts(getElementsInRange(posts, limit, offset), pt, ut, sdf);
     }
 
-    public static PostBehavior getSinglePost(main.model.Post post, SimpleDateFormat sdf) {
-        return getPostOfType(PostModelType.WITH_COMMENTS, post, getUserOfType(UserModelType.DEFAULT, post.getUser()), sdf);
+    public static PostBehavior getSinglePost(main.model.Post post, SimpleDateFormat sdf)
+    {
+        return getPostOfType(PostModelType.WITH_COMMENTS, post, getUserOfType(UserModelType.DEFAULT, post
+                .getUser()), sdf);
     }
 
     /**
@@ -30,7 +33,8 @@ public class ViewModelFactory {
      * @param pt    needed post format for response
      * @param ut    needed user format for response
      */
-    private static Posts createPosts(List<main.model.Post> posts, PostModelType pt, UserModelType ut, SimpleDateFormat sdf) {
+    private static Posts createPosts(List<main.model.Post> posts, PostModelType pt, UserModelType ut, SimpleDateFormat sdf)
+    {
         List<PostBehavior> formattedPosts = new ArrayList<>();
         posts.forEach(post -> {//For each post in the list formats the data for response
             UserBehavior user = getUserOfType(ut, post.getUser());
@@ -45,8 +49,10 @@ public class ViewModelFactory {
      * @param user user from database that needs to be formatted
      * @return formatted UserBehavior depending on user format.
      */
-    private static UserBehavior getUserOfType(UserModelType ut, main.model.User user) {
-        switch (ut) {
+    private static UserBehavior getUserOfType(UserModelType ut, main.model.User user)
+    {
+        switch (ut)
+        {
             case DEFAULT:
                 return new User(user.getId(), user.getName());
             case FULL_INFO:
@@ -61,9 +67,10 @@ public class ViewModelFactory {
         }
     }
 
-    public static UserFullInfo getFullInfoUser(main.model.User user, int postsForModeration){
+    public static UserFullInfo getFullInfoUser(main.model.User user, int postsForModeration)
+    {
         return new UserFullInfo(user.getId(), user.getName(), user.getPhoto(), user.getEmail(),
-                user.isModerator(), user.getModeratedPosts().size()+postsForModeration, user.isModerator());
+                user.isModerator(), user.getModeratedPosts().size() + postsForModeration, user.isModerator());
     }
 
     /**
@@ -72,8 +79,10 @@ public class ViewModelFactory {
      * @param user user-author of the post
      * @return PostBehavior with needed Post format
      */
-    private static PostBehavior getPostOfType(PostModelType pt, main.model.Post post, UserBehavior user, SimpleDateFormat sdf) {
-        switch (pt) {
+    private static PostBehavior getPostOfType(PostModelType pt, main.model.Post post, UserBehavior user, SimpleDateFormat sdf)
+    {
+        switch (pt)
+        {
             case DEFAULT:
                 return new Post(
                         post.getId(),
@@ -89,7 +98,8 @@ public class ViewModelFactory {
             case WITH_COMMENTS:
                 List<Comment> comments = new ArrayList<>();
                 List<String> tags = new ArrayList<>();
-                post.getPostComments().forEach(pc -> comments.add(new Comment(pc.getId(), pc.getText(), sdf.format(pc.getTime()), getUserOfType(UserModelType.WITH_PHOTO, pc.getUser()))));
+                post.getPostComments().forEach(pc -> comments.add(new Comment(pc.getId(), pc.getText(), sdf
+                        .format(pc.getTime()), getUserOfType(UserModelType.WITH_PHOTO, pc.getUser()))));
                 post.getTags().forEach(tag -> tags.add(tag.getTag().getName()));
                 return new PostWithCommentsAndTags(
                         post.getId(),
@@ -104,35 +114,61 @@ public class ViewModelFactory {
                         comments,
                         tags);
             case FOR_MODERATION:
-                return new PostForModeration(post.getId(), sdf.format(post.getTime()), user, post.getTitle(), Jsoup.parse(post.getText()).text());
+                return new PostForModeration(post.getId(), sdf.format(post.getTime()), user, post.getTitle(), Jsoup
+                        .parse(post.getText()).text());
             default:
                 return null;
         }
     }
 
-    public static Tags getTags(List<main.model.Tag> tags) {
-        if(tags.isEmpty())
+    public static Tags getTags(List<main.model.Tag> tags)
+    {
+        if (tags.isEmpty())
             return new Tags(new ArrayList<Tag>());
 
         List<Tag> formattedTags = new ArrayList<>();
         double size = 0;
-        for (main.model.Tag tag : tags) {
-            for (main.model.TagToPost ttp : tag.getTaggedPosts()) {
+        for (main.model.Tag tag : tags)
+        {
+            for (main.model.TagToPost ttp : tag.getTaggedPosts())
+            {
                 if (ttp.getPost().isActive()) size++;
             }
         }
         double finalSize = size;
         double maxWeight = tags.stream().map(tag ->
-                tag.getTaggedPosts().stream().filter(ttp-> ttp.getPost().isActive()).count() / finalSize).max(Double::compare).get();
-        tags.forEach(tag ->formattedTags.add(new Tag(tag.getName(), ((double) tag.getTaggedPosts().stream().filter(ttp-> ttp.getPost().isActive()).count() / finalSize) / maxWeight)));
+                tag.getTaggedPosts().stream().filter(ttp -> ttp.getPost().isActive()).count() / finalSize)
+                .max(Double::compare).get();
+        tags.forEach(tag -> formattedTags.add(new Tag(tag.getName(), ((double) tag.getTaggedPosts().stream()
+                .filter(ttp -> ttp.getPost().isActive()).count() / finalSize) / maxWeight)));
         return new Tags(formattedTags);
     }
 
 
-    private static String getAnnounceFromText(String text){
+    private static List<main.model.Post> getElementsInRange(List<main.model.Post> list, int offset, int limit)
+    {
+        int lastElementIndex = offset + limit;
+        int lastPostIndex = list.size();
+        if (lastPostIndex >= offset)
+        {//если есть элементы входящие в нужный диапазон
+            if (lastElementIndex <= lastPostIndex)
+            {//если все элементы с нужными индексами есть в листе
+                return list.subList(offset, lastElementIndex);
+            } else
+            {//если не хватает элементов, то в посты записываем остаток, считая от offset
+                return list.subList(offset, lastPostIndex);
+            }
+        } else
+        {
+            return new ArrayList<>();
+        }
+    }
+
+    private static String getAnnounceFromText(String text)
+    {
         String result = Jsoup.parse(text).text();
-        return result.length()>150
-                ? result.substring(0, ANNOUNCE_SIZE)+"..."
+        return result.length() > ANNOUNCE_SIZE
+                ? result.substring(0, ANNOUNCE_SIZE) + "..."
                 : result;
     }
 }

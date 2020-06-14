@@ -1,11 +1,11 @@
 package main.service;
 
 import main.InitInfo;
-import main.api.MyStatisticsResponse;
-import main.api.ProfileEditRequest;
-import main.api.ProfileEditResponse;
 import main.api.general.ModerationRequest;
+import main.api.general.StatisticsResponse;
 import main.api.general.calendar.CalendarResponse;
+import main.api.general.profile.ProfileEditRequest;
+import main.api.general.profile.ProfileEditResponse;
 import main.api.post.comment.AddCommentRequest;
 import main.api.post.tag.Tags;
 import main.model.User;
@@ -32,9 +32,9 @@ public interface GeneralService {
 
     ProfileEditResponse editProfile(ProfileEditRequest request, User user);
 
-    MyStatisticsResponse getMyStatistics(User user);
+    StatisticsResponse getMyStatistics(User user);
 
-    MyStatisticsResponse getAllStatistics();
+    StatisticsResponse getAllStatistics();
 
     void editSettings(HashMap<String, Boolean> request);
 }

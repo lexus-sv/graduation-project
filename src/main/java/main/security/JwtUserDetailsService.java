@@ -1,7 +1,6 @@
 package main.security;
 
 import main.model.User;
-import main.security.jwt.JwtUser;
 import main.security.jwt.JwtUserFactory;
 import main.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
