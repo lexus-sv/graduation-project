@@ -1,5 +1,6 @@
 package main.repository;
 
+import main.api.MyStatisticsResponse;
 import main.api.general.calendar.CalendarObject;
 import main.model.ModerationStatus;
 import main.model.Post;
@@ -15,7 +16,7 @@ import java.util.List;
 public interface PostRepository extends JpaRepository<Post, Integer> {
     List<Post> findAllByActiveTrueAndModerationStatusAndTimeBefore(ModerationStatus moderationStatus, Date time);
 
-    List<Post> findAllByTitleContainingAndModerationStatusAndTimeBeforeAndActiveTrue(String title, ModerationStatus moderationStatus, Date time);
+    List<Post> findAllByTitleContainingOrTextContainingAndModerationStatusAndTimeBeforeAndActiveTrue(String title, String text, ModerationStatus moderationStatus, Date time);
 
     @Query("select p from Post p where function('date', p.time) = function('date', ?1) and p.moderationStatus=main.model.ModerationStatus.ACCEPTED and p.active = true ")
     List<Post> findActiveByDate(String date);
@@ -40,4 +41,11 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
     @Query("select function('year', p.time) from Post p where p.active=true and p.moderationStatus=main.model.ModerationStatus.ACCEPTED group by function('year', p.time) having function('count', p)>0 ")
     List<Long> getYears();
 
+    @Query("select new main.api.MyStatisticsResponse(" +
+            "count(p), " +
+            "(select count(pv) from PostVote pv where pv.value=true), " +
+            "(select count(pv) from PostVote pv where pv.value=false), " +
+            "(select sum(p.viewCount) from Post p), " +
+            "function('date_format', max(p.time), '%k:%i %d.%m.%Y')) from Post p")
+    MyStatisticsResponse getGlobalStats();
 }

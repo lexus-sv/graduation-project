@@ -52,22 +52,22 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public AuthResponse register(RegisterUserRequest request) {
-        RegisterError registerError = new RegisterError();
+        RegisterError errors = new RegisterError();
         if (userRepository.existsByEmail(request.getEmail())) {
-            registerError.setEmail(ERROR_EMAIL);
+            errors.setEmail(ERROR_EMAIL);
         }
         if (request.getName().length() < 3 || !isValidName(request.getName())) {
-            registerError.setName(ERROR_NAME);
+            errors.setName(ERROR_NAME);
         }
         if (request.getPassword().length() < 6) {
-            registerError.setPassword(ERROR_PASSWORD);
+            errors.setPassword(ERROR_PASSWORD);
         }
         if (!captchaService.isValidCaptcha(request.getCaptcha(), request.getCaptchaSecret())) {
-            registerError.setCaptcha(ERROR_CAPTCHA);
+            errors.setCaptcha(ERROR_CAPTCHA);
         }
-        if (registerError.hasAtLeastOneError()) {
-            log.info("IN register request has errors {}", registerError);
-            return new RegisterErrorResponse(registerError);
+        if (errors.hasAtLeastOneError()) {
+            log.info("IN register request has errors {}", errors);
+            return new RegisterErrorResponse(errors);
         }
         String password = request.getPassword();
         User user = new User();

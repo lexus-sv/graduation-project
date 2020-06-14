@@ -5,11 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import main.api.auth.request.PasswordUserRequest;
 import main.api.auth.response.*;
 import main.api.auth.response.error.PassError;
+import main.api.auth.response.error.RegisterError;
 import main.model.User;
 import main.api.auth.request.RegisterUserRequest;
 import main.api.auth.request.LoginUserRequest;
 import main.api.ViewModelFactory;
-import main.repository.PostRepository;
 import main.security.jwt.JwtAuthenticationException;
 import main.security.jwt.JwtTokenProvider;
 import main.service.impl.EmailServiceImpl;
@@ -36,8 +36,6 @@ import java.util.Properties;
 public class AuthServiceImpl implements AuthService {
 
     @Autowired
-    private PostRepository postRepository;
-    @Autowired
     private CaptchaService captchaService;
     @Autowired
     private EmailServiceImpl emailService;
@@ -47,11 +45,14 @@ public class AuthServiceImpl implements AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final BCryptPasswordEncoder passwordEncoder;
     private final UserService userService;
+    private final Settings settings;
 
     private final static String PASSWORD_RESTORE_PATH = "/login/change-password?token=";
+    private final static String MULTIUSER_MODE_KEY = "MULTIUSER_MODE";
 
     @Autowired
-    public AuthServiceImpl(AuthenticationManager authenticationManager, JwtTokenProvider jwtTokenProvider, BCryptPasswordEncoder passwordEncoder, UserService userService) {
+    public AuthServiceImpl(AuthenticationManager authenticationManager, JwtTokenProvider jwtTokenProvider, BCryptPasswordEncoder passwordEncoder, UserService userService, Settings settings) {
+        this.settings = settings;
         this.cookieManager = CookieManager.getInstance();
         this.authenticationManager = authenticationManager;
         this.jwtTokenProvider = jwtTokenProvider;
@@ -99,11 +100,13 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResponse register(RegisterUserRequest request) {
-        AuthResponse result = userService.register(request);
-        if (result instanceof ResultResponse) {//Сообщения подкорректировать
-            emailService.sendSimpleMessage(request.getEmail(), "Devpub registration", "Рады приветствовать Вас на нашем ресурсе!");
-        }
-        return result;
+        if(settings.getSetting(MULTIUSER_MODE_KEY)) {
+            AuthResponse result = userService.register(request);
+            if (result instanceof ResultResponse) {//Сообщения подкорректировать
+                emailService.sendSimpleMessage(request.getEmail(), "Devpub registration", "Рады приветствовать Вас на нашем ресурсе!");
+            }
+            return result;
+        } else return new RegisterErrorResponse(new RegisterError());//Что здесь возвращать?
     }
 
     @SneakyThrows

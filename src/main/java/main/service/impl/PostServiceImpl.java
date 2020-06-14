@@ -11,6 +11,7 @@ import main.repository.PostRepository;
 import main.repository.PostVoteRepository;
 import main.repository.TagRepository;
 import main.service.PostService;
+import main.service.Settings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -36,15 +37,19 @@ public class PostServiceImpl implements PostService {
 
     private final PostVoteRepository voteRepository;
 
+    private final Settings settings;
+
     private final static SimpleDateFormat searchDateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private final static SimpleDateFormat dateSRDF = new SimpleDateFormat("dd.MM.yyyy hh:mm");
     private final static SimpleDateFormat defaultDF = new SimpleDateFormat("hh:mm dd.MM.yyyy");
+    private final String PREMODERATION_KEY = "POST_PREMODERATION";
 
     @Autowired
-    public PostServiceImpl(PostRepository postRepository, TagRepository tagRepository, PostVoteRepository voteRepository) {
+    public PostServiceImpl(PostRepository postRepository, TagRepository tagRepository, PostVoteRepository voteRepository, Settings settings) {
         this.postRepository = postRepository;
         this.tagRepository = tagRepository;
         this.voteRepository = voteRepository;
+        this.settings = settings;
     }
 
     @Override
@@ -81,7 +86,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public Posts search(int offset, int limit, String query) {
         List<Post> posts = query.length() > 0
-                ? postRepository.findAllByTitleContainingAndModerationStatusAndTimeBeforeAndActiveTrue(query, ModerationStatus.ACCEPTED, new Date())
+                ? postRepository.findAllByTitleContainingOrTextContainingAndModerationStatusAndTimeBeforeAndActiveTrue(query, query, ModerationStatus.ACCEPTED, new Date())
                 : postRepository.findAllByActiveTrueAndModerationStatusAndTimeBefore(ModerationStatus.ACCEPTED, new Date());
         posts = getElementsInRange(posts, offset, limit);
         return getPosts(posts, PostModelType.DEFAULT, UserModelType.DEFAULT, defaultDF);
@@ -167,7 +172,13 @@ public class PostServiceImpl implements PostService {
             response.setResult(true);
             Post post = new Post();
             post.setActive(request.isActive());
-            post.setModerationStatus(ModerationStatus.NEW);
+
+
+            post.setModerationStatus(
+                    settings.getSetting(PREMODERATION_KEY)
+                    ? ModerationStatus.NEW
+                    : ModerationStatus.ACCEPTED);
+
             post.setText(request.getText());
             log.info("IN addPost text: {}", request.getText());
             post.setTitle(request.getTitle());
@@ -206,7 +217,12 @@ public class PostServiceImpl implements PostService {
             response.setResult(true);
             Post post = postRepository.findById(id).orElse(null);
             post.setActive(request.isActive());
-            post.setModerationStatus(ModerationStatus.NEW);
+
+            post.setModerationStatus(
+                    settings.getSetting(PREMODERATION_KEY)
+                            ? ModerationStatus.NEW
+                            : ModerationStatus.ACCEPTED);
+
             post.setText(request.getText());
             post.setTitle(request.getTitle());
             try {

@@ -4,22 +4,19 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import main.InitInfo;
 import main.api.*;
+import main.api.auth.response.ResultResponse;
 import main.api.post.comment.AddCommentRequest;
 import main.api.general.ModerationRequest;
 import main.api.general.calendar.CalendarResponse;
 import main.api.post.tag.Tags;
 import main.model.*;
 import main.repository.*;
-import main.service.AuthServiceImpl;
-import main.service.GeneralService;
-import main.service.ImageService;
-import main.service.UserService;
+import main.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -40,8 +37,6 @@ public class GeneralServiceImpl implements GeneralService {
     @Value("${init.copyrightFrom}")
     private String copyrightFrom;
 
-    private final GlobalSettingsRepository settingsRepository;
-
     private final PostRepository postRepository;
 
     private final PostCommentRepository commentRepository;
@@ -52,15 +47,18 @@ public class GeneralServiceImpl implements GeneralService {
 
     private final UserService userService;
 
+    private final Settings settings;
+
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    private final String STATISTICS_IS_PUBLIC_KEY = "STATISTICS_IS_PUBLIC";
 
     @Autowired
-    public GeneralServiceImpl(GlobalSettingsRepository settingsRepository, AuthServiceImpl authService, PostRepository postRepository, PostCommentRepository commentRepository, TagRepository tagRepository, ImageService imageService, UserService userService) {
-        this.settingsRepository = settingsRepository;
+    public GeneralServiceImpl(AuthServiceImpl authService, PostRepository postRepository, PostCommentRepository commentRepository, TagRepository tagRepository, ImageService imageService, UserService userService, Settings settings) {
         this.postRepository = postRepository;
         this.commentRepository = commentRepository;
         this.tagRepository = tagRepository;
         this.userService = userService;
+        this.settings = settings;
         this.imageService = new ImageService();
     }
 
@@ -71,10 +69,7 @@ public class GeneralServiceImpl implements GeneralService {
 
     @Override
     public HashMap<String, Boolean> getSettings() {
-        HashMap<String, Boolean> result = new HashMap<>();
-        settingsRepository.findAll().forEach(s -> result.put(s.getCode(), s.isValue()));
-        log.info("IN getSettings settings {}", result);
-        return result;
+        return settings.getSettings();
     }
 
     @Override
@@ -175,19 +170,17 @@ public class GeneralServiceImpl implements GeneralService {
 
     @Override
     public MyStatisticsResponse getAllStatistics() {
-        log.info("getAllStatistics successfully");
-        return settingsRepository.getGlobalStats();
+        if(settings.getSetting(STATISTICS_IS_PUBLIC_KEY)) {
+            log.info("getAllStatistics successfully");
+            return postRepository.getGlobalStats();
+        } else {
+            return null;
+        }
     }
 
     @Override
     public void editSettings(HashMap<String, Boolean> request)  {
-        request.forEach((key,value)->{
-            GlobalSettings setting = settingsRepository.findByCode(key);
-            if(value!=null){
-                setting.setValue(value);
-                settingsRepository.save(setting);
-            }
-        });
+        settings.update(request);
         log.info("IN editSettings settings : {} have been applied", request);
     }
 }
