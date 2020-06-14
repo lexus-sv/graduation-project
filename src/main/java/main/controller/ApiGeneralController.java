@@ -6,7 +6,7 @@ import main.api.ProfileEditRequest;
 import main.api.auth.response.ResultResponse;
 import main.api.post.comment.AddCommentRequest;
 import main.api.general.ModerationRequest;
-import main.service.AuthServiceImpl;
+import main.service.impl.AuthServiceImpl;
 import main.service.GeneralService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

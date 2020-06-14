@@ -4,7 +4,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import main.InitInfo;
 import main.api.*;
-import main.api.auth.response.ResultResponse;
 import main.api.post.comment.AddCommentRequest;
 import main.api.general.ModerationRequest;
 import main.api.general.calendar.CalendarResponse;
@@ -53,7 +52,8 @@ public class GeneralServiceImpl implements GeneralService {
     private final String STATISTICS_IS_PUBLIC_KEY = "STATISTICS_IS_PUBLIC";
 
     @Autowired
-    public GeneralServiceImpl(AuthServiceImpl authService, PostRepository postRepository, PostCommentRepository commentRepository, TagRepository tagRepository, ImageService imageService, UserService userService, Settings settings) {
+    public GeneralServiceImpl(AuthServiceImpl authService, PostRepository postRepository, PostCommentRepository commentRepository, TagRepository tagRepository, ImageService imageService, UserService userService, Settings settings)
+    {
         this.postRepository = postRepository;
         this.commentRepository = commentRepository;
         this.tagRepository = tagRepository;
@@ -63,17 +63,20 @@ public class GeneralServiceImpl implements GeneralService {
     }
 
     @Override
-    public InitInfo init() {
+    public InitInfo init()
+    {
         return new InitInfo(title, subtitle, phone, email, copyright, copyrightFrom);
     }
 
     @Override
-    public HashMap<String, Boolean> getSettings() {
+    public HashMap<String, Boolean> getSettings()
+    {
         return settings.getSettings();
     }
 
     @Override
-    public Tags getTags(String query) {
+    public Tags getTags(String query)
+    {
         List<Tag> tagList = query.length() != 0
                 ? tagRepository.getRelevantTags(query)
                 : tagRepository.findAll();
@@ -81,28 +84,34 @@ public class GeneralServiceImpl implements GeneralService {
     }
 
     @Override
-    public String uploadImage(MultipartFile image) {
+    public String uploadImage(MultipartFile image)
+    {
         return imageService.saveImage(image, false);
     }
 
     @SneakyThrows
     @Override
-    public byte[] getImageFromStorage(String path) {
+    public byte[] getImageFromStorage(String path)
+    {
         return imageService.getImageFromStorage(path);
     }
 
     @Override
-    public HashMap<Object, Object> addComment(AddCommentRequest request, User user) {
+    public HashMap<Object, Object> addComment(AddCommentRequest request, User user)
+    {
         Post post = postRepository.findById(request.getPostId()).orElse(null);
         HashMap<Object, Object> response = new HashMap<>();
-        if (request.getParentId() != null) {
+        if (request.getParentId() != null)
+        {
             PostComment parentComment = commentRepository.findById(request.getParentId()).orElse(null);
 
-            if (parentComment == null || post == null) {
+            if (parentComment == null || post == null)
+            {
                 throw new NullPointerException("post or parentComment cant be null");
             }
 
-            if (request.getText().length() < 5) {
+            if (request.getText().length() < 5)
+            {
                 response.put("result", false);
                 HashMap<String, String> errors = new HashMap<>();
                 errors.put("text", "Текст комментария должен быть не меньше 5 символов");
@@ -117,8 +126,10 @@ public class GeneralServiceImpl implements GeneralService {
             comment.setUser(user);
             comment.setTime(new Date());
             response.put("id", commentRepository.save(comment).getId());
-        } else {//if parentId == null
-            if (request.getText().length() < 5) {
+        } else
+        {//if parentId == null
+            if (request.getText().length() < 5)
+            {
                 response.put("result", false);
                 HashMap<String, String> errors = new HashMap<>();
                 errors.put("text", "Текст комментария должен быть не меньше 5 символов");
@@ -138,7 +149,8 @@ public class GeneralServiceImpl implements GeneralService {
     }
 
     @Override
-    public void moderate(ModerationRequest request, User user) {
+    public void moderate(ModerationRequest request, User user)
+    {
         Post post = postRepository.findById(request.getPostId()).get();
         post.setModerationStatus(ModerationStatus.getEqualStatus(request.getDecision()));
         post.setModerator(user);
@@ -146,9 +158,11 @@ public class GeneralServiceImpl implements GeneralService {
     }
 
     @Override
-    public CalendarResponse getCalendar(Integer year) {
-        if(year==null){
-            year =  new Date().getYear();
+    public CalendarResponse getCalendar(Integer year)
+    {
+        if (year == null)
+        {
+            year = new Date().getYear();
         }
         HashMap<String, Long> posts = new HashMap<>();
         postRepository.getCalendarQuery(year).forEach(o -> posts.put(dateFormat.format(o.getDate()), o.getCount()));
@@ -159,27 +173,33 @@ public class GeneralServiceImpl implements GeneralService {
     }
 
     @Override
-    public ProfileEditResponse editProfile(ProfileEditRequest request, User user) {
+    public ProfileEditResponse editProfile(ProfileEditRequest request, User user)
+    {
         return userService.edit(request, user);
     }
 
     @Override
-    public MyStatisticsResponse getMyStatistics(User user) {
+    public MyStatisticsResponse getMyStatistics(User user)
+    {
         return userService.getUserStatistics(user);
     }
 
     @Override
-    public MyStatisticsResponse getAllStatistics() {
-        if(settings.getSetting(STATISTICS_IS_PUBLIC_KEY)) {
+    public MyStatisticsResponse getAllStatistics()
+    {
+        if (settings.getSetting(STATISTICS_IS_PUBLIC_KEY))
+        {
             log.info("getAllStatistics successfully");
             return postRepository.getGlobalStats();
-        } else {
+        } else
+        {
             return null;
         }
     }
 
     @Override
-    public void editSettings(HashMap<String, Boolean> request)  {
+    public void editSettings(HashMap<String, Boolean> request)
+    {
         settings.update(request);
         log.info("IN editSettings settings : {} have been applied", request);
     }

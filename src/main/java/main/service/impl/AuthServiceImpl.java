@@ -1,4 +1,4 @@
-package main.service;
+package main.service.impl;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -6,13 +6,15 @@ import main.api.auth.request.PasswordUserRequest;
 import main.api.auth.response.*;
 import main.api.auth.response.error.PassError;
 import main.api.auth.response.error.RegisterError;
+import main.model.ModerationStatus;
 import main.model.User;
 import main.api.auth.request.RegisterUserRequest;
 import main.api.auth.request.LoginUserRequest;
 import main.api.ViewModelFactory;
+import main.repository.PostRepository;
 import main.security.jwt.JwtAuthenticationException;
 import main.security.jwt.JwtTokenProvider;
-import main.service.impl.EmailServiceImpl;
+import main.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -40,6 +42,8 @@ public class AuthServiceImpl implements AuthService {
     @Autowired
     private EmailServiceImpl emailService;
 
+    private final PostRepository postRepository;
+
     private final CookieManager cookieManager;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
@@ -51,7 +55,9 @@ public class AuthServiceImpl implements AuthService {
     private final static String MULTIUSER_MODE_KEY = "MULTIUSER_MODE";
 
     @Autowired
-    public AuthServiceImpl(AuthenticationManager authenticationManager, JwtTokenProvider jwtTokenProvider, BCryptPasswordEncoder passwordEncoder, UserService userService, Settings settings) {
+    public AuthServiceImpl(PostRepository postRepository, AuthenticationManager authenticationManager, JwtTokenProvider jwtTokenProvider, BCryptPasswordEncoder passwordEncoder, UserService userService, Settings settings)
+    {
+        this.postRepository = postRepository;
         this.settings = settings;
         this.cookieManager = CookieManager.getInstance();
         this.authenticationManager = authenticationManager;
@@ -61,26 +67,9 @@ public class AuthServiceImpl implements AuthService {
     }
 
 
-    @Bean
-    public JavaMailSender getJavaMailSender() {
-        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-        mailSender.setHost("smtp.gmail.com");
-        mailSender.setPort(587);
-
-        mailSender.setUsername("devpubemailservice@gmail.com");
-        mailSender.setPassword("jkwgjhaxnzqhmmqi");
-
-        Properties props = mailSender.getJavaMailProperties();
-        props.put("mail.transport.protocol", "smtp");
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.debug", "true");
-
-        return mailSender;
-    }
-
     @Override
-    public AuthResponse login(LoginUserRequest request, HttpServletResponse response) {
+    public AuthResponse login(LoginUserRequest request, HttpServletResponse response)
+    {
         try {
             String email = request.getEmail();
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, request.getPassword()));
@@ -89,21 +78,24 @@ public class AuthServiceImpl implements AuthService {
                 throw new UsernameNotFoundException("User with username: " + email + " not found");
             }
             String token = jwtTokenProvider.createToken(email);
-            cookieManager.addCookie(response, token, (int) (jwtTokenProvider.getCookieMaxAge()-1)/1000);
+            cookieManager.addCookie(response, token, (int) (jwtTokenProvider.getCookieMaxAge() - 1) / 1000);
             //to seconds, -1 for evading jwt expiration exception because of cookie with token expiring faster then jwt
             log.info("IN login user {} has logged in", user);
-            return new LoginUserResponse(true, ViewModelFactory.getFullInfoUser(user));
+            return new LoginUserResponse(true, ViewModelFactory
+                    .getFullInfoUser(user, postRepository.countByModerationStatusNot(ModerationStatus.ACCEPTED)));
         } catch (AuthenticationException e) {
             throw new BadCredentialsException("Invalid username or password");
         }
     }
 
     @Override
-    public AuthResponse register(RegisterUserRequest request) {
-        if(settings.getSetting(MULTIUSER_MODE_KEY)) {
+    public AuthResponse register(RegisterUserRequest request)
+    {
+        if (settings.getSetting(MULTIUSER_MODE_KEY)) {
             AuthResponse result = userService.register(request);
             if (result instanceof ResultResponse) {//Сообщения подкорректировать
-                emailService.sendSimpleMessage(request.getEmail(), "Devpub registration", "Рады приветствовать Вас на нашем ресурсе!");
+                emailService.sendSimpleMessage(request
+                        .getEmail(), "Devpub registration", "Рады приветствовать Вас на нашем ресурсе!");
             }
             return result;
         } else return new RegisterErrorResponse(new RegisterError());//Что здесь возвращать?
@@ -111,17 +103,20 @@ public class AuthServiceImpl implements AuthService {
 
     @SneakyThrows
     @Override
-    public AuthResponse logout(HttpServletResponse response) {
+    public AuthResponse logout(HttpServletResponse response)
+    {
         cookieManager.deleteCookie(response);
         log.info("IN logout has been successfully made");
         return new ResultResponse(true);
     }
 
     @Override
-    public AuthResponse authCheck(String token) {
+    public AuthResponse authCheck(String token)
+    {
         try {
             return new AuthCheckResponse(true, ViewModelFactory
-                    .getFullInfoUser(userService.findByEmail(jwtTokenProvider.getUsername(token))));
+                    .getFullInfoUser(userService.findByEmail(jwtTokenProvider.getUsername(token)), postRepository
+                            .countByModerationStatusNot(ModerationStatus.ACCEPTED)));
         } catch (Exception e) {
             log.info("IN authCheck exception {} caught", e.getClass());
             return new ResultResponse(false);
@@ -129,17 +124,20 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public User getAuthorizedUser(String token) {
+    public User getAuthorizedUser(String token)
+    {
         return userService.findByEmail(jwtTokenProvider.getUsername(token));
     }
 
     @Override
-    public boolean isAuthorized(String token) {
+    public boolean isAuthorized(String token)
+    {
         return false;
     }
 
     @Override
-    public AuthResponse passwordRecovery(String email, String url) {
+    public AuthResponse passwordRecovery(String email, String url)
+    {
         User user = userService.findByEmail(email);
         if (user != null) {
             user.setCode(captchaService.generateRandomString(50));
@@ -155,7 +153,8 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public AuthResponse passwordSet(PasswordUserRequest dto, String referer) {
+    public AuthResponse passwordSet(PasswordUserRequest dto, String referer)
+    {
         PassError errors = new PassError();
         try {
             URL ub = new URL(referer);
@@ -191,5 +190,24 @@ public class AuthServiceImpl implements AuthService {
             errors.setCode("Ссылка для восстановления пароля устарела.<a href=\"restore-password\">Запросить ссылку снова</a>");
             return new PasswordErrorResponse(errors);
         }
+    }
+
+    @Bean
+    public JavaMailSender getJavaMailSender()
+    {
+        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+        mailSender.setHost("smtp.gmail.com");
+        mailSender.setPort(587);
+
+        mailSender.setUsername("devpubemailservice@gmail.com");
+        mailSender.setPassword("jkwgjhaxnzqhmmqi");
+
+        Properties props = mailSender.getJavaMailProperties();
+        props.put("mail.transport.protocol", "smtp");
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.debug", "true");
+
+        return mailSender;
     }
 }

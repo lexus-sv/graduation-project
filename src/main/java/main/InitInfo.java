@@ -9,11 +9,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class InitInfo{
 
-    private String title="DevPub";
-    private String subtitle="Рассказы разработчиков";
-    private String phone="+7 903 666-44-55";
-    private String email="alakai20136@gmail.com";
-    private String copyright = "Алексей Сухилин";
-    private String copyrightFrom = "2019";
+    private String title;
+    private String subtitle;
+    private String phone;
+    private String email;
+    private String copyright;
+    private String copyrightFrom;
 
 }

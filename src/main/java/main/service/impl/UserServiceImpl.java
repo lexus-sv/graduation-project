@@ -43,7 +43,8 @@ public class UserServiceImpl implements UserService {
     private final long maxFileSizeInBytes = 5242880;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder, CaptchaService captchaService, ImageService imageService) {
+    public UserServiceImpl(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder, CaptchaService captchaService, ImageService imageService)
+    {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.captchaService = captchaService;
@@ -51,21 +52,27 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public AuthResponse register(RegisterUserRequest request) {
+    public AuthResponse register(RegisterUserRequest request)
+    {
         RegisterError errors = new RegisterError();
-        if (userRepository.existsByEmail(request.getEmail())) {
+        if (userRepository.existsByEmail(request.getEmail()))
+        {
             errors.setEmail(ERROR_EMAIL);
         }
-        if (request.getName().length() < 3 || !isValidName(request.getName())) {
+        if (request.getName().length() < 3 || !isValidName(request.getName()))
+        {
             errors.setName(ERROR_NAME);
         }
-        if (request.getPassword().length() < 6) {
+        if (request.getPassword().length() < 6)
+        {
             errors.setPassword(ERROR_PASSWORD);
         }
-        if (!captchaService.isValidCaptcha(request.getCaptcha(), request.getCaptchaSecret())) {
+        if (!captchaService.isValidCaptcha(request.getCaptcha(), request.getCaptchaSecret()))
+        {
             errors.setCaptcha(ERROR_CAPTCHA);
         }
-        if (errors.hasAtLeastOneError()) {
+        if (errors.hasAtLeastOneError())
+        {
             log.info("IN register request has errors {}", errors);
             return new RegisterErrorResponse(errors);
         }
@@ -84,24 +91,28 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<User> getAll() {
+    public List<User> getAll()
+    {
         return userRepository.findAll();
     }
 
     @Override
-    public User findByEmail(String email) {
+    public User findByEmail(String email)
+    {
         return userRepository
                 .findByEmail(email)
                 .orElse(null);
     }
 
     @Override
-    public User save(User user) {
+    public User save(User user)
+    {
         return userRepository.save(user);
     }
 
     @Override
-    public ProfileEditResponse edit(ProfileEditRequest request, User user) {
+    public ProfileEditResponse edit(ProfileEditRequest request, User user)
+    {
         ProfileEditResponse response = new ProfileEditResponse();
         ProfileErrors errors = new ProfileErrors();
 
@@ -109,52 +120,70 @@ public class UserServiceImpl implements UserService {
         String email = request.getEmail();
         String password = request.getPassword();
         Boolean removePhoto = request.getRemovePhoto();
-        MultipartFile photo=null;
-        try {
+        MultipartFile photo = null;
+        try
+        {
             photo = (MultipartFile) request.getPhoto();
-        } catch (ClassCastException ignored){}
+        } catch (ClassCastException ignored)
+        {
+        }
 
         boolean isDataCorrect = true;
 
-        if (email != null) {
-            if (findByEmail(email) == null || email.equalsIgnoreCase(user.getEmail())) {
+        if (email != null)
+        {
+            if (findByEmail(email) == null || email.equalsIgnoreCase(user.getEmail()))
+            {
                 user.setEmail(email);
-            } else {
+            } else
+            {
                 errors.setEmail(ERROR_EMAIL);
                 isDataCorrect = false;
             }
         }
-        if (name != null) {
-            if(name.length()>3 && isValidName(name)) {
+        if (name != null)
+        {
+            if (name.length() > 3 && isValidName(name))
+            {
                 user.setName(name);
-            } else {
+            } else
+            {
                 errors.setName(ERROR_NAME);
                 isDataCorrect = false;
             }
         }
-        if (password != null) {
-            if (password.length()>=6) {
+        if (password != null)
+        {
+            if (password.length() >= 6)
+            {
                 user.setPassword(passwordEncoder.encode(request.getPassword()));
-            } else {
+            } else
+            {
                 errors.setPassword(ERROR_PASSWORD);
                 isDataCorrect = false;
             }
         }
-        if (removePhoto != null && removePhoto) {
+        if (removePhoto != null && removePhoto)
+        {
             user.setPhoto(null);
         }
-        if (photo != null) {
-            if(photo.getSize()<maxFileSizeInBytes) {
+        if (photo != null)
+        {
+            if (photo.getSize() < maxFileSizeInBytes)
+            {
                 log.info("here");
                 user.setPhoto(imageService.saveImage(photo, true));
-            } else {
+            } else
+            {
                 errors.setPhoto(ERROR_PHOTO);
                 isDataCorrect = false;
             }
         }
-        if(isDataCorrect){
+        if (isDataCorrect)
+        {
             log.info("user :{} saved", userRepository.save(user));
-        } else {
+        } else
+        {
             response.setErrors(errors);
             log.info("IN edit request is incorrect, errors :{}", errors);
         }
@@ -164,24 +193,28 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public MyStatisticsResponse getUserStatistics(User user) {
+    public MyStatisticsResponse getUserStatistics(User user)
+    {
         log.info("IN getMyStatistics user {} got his stats", user);
         return userRepository.getStatisticsByUser(user);
     }
 
     @Override
-    public User findById(int id) {
+    public User findById(int id)
+    {
         return userRepository
                 .findById(id)
                 .orElse(null);
     }
 
     @Override
-    public void delete(int id) {
+    public void delete(int id)
+    {
         userRepository.deleteById(id);
     }
 
-    private boolean isValidName(String name) {
+    private boolean isValidName(String name)
+    {
         Pattern p = Pattern.compile("^[ a-zA-Zа-яА-Я0-9_.-]*$");
         Matcher matcher = p.matcher(name);
         return matcher.matches();
