@@ -1,5 +1,8 @@
 <!DOCTYPE html>
-<html lang=en>
+<html lang=en
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
 <head>
     <meta charset=utf-8>
     <meta http-equiv=X-UA-Compatible content="IE=edge">
@@ -11,13 +14,13 @@
     <link href=/css/addText.3e32e758.css rel=prefetch>
     <link href=/css/article.d31131f7.css rel=prefetch>
     <link href=/css/articles.ab6c5fed.css rel=prefetch>
-    <link href=/css/baseArticle.57abede2.css rel=prefetch>
+    <link href=/css/baseArticle.d9180b48.css rel=prefetch>
     <link href=/css/baseButton.f7cd099c.css rel=prefetch>
     <link href=/css/baseNavbar.0c5366b4.css rel=prefetch>
     <link href=/css/calendar.7ef4a90f.css rel=prefetch>
     <link href=/css/calendarMonth.c4c06180.css rel=prefetch>
     <link href=/css/calendarTable.dc9a89bb.css rel=prefetch>
-    <link href=/css/comment.f8635a9f.css rel=prefetch>
+    <link href=/css/comment.2e97f697.css rel=prefetch>
     <link href=/css/editPost.c8f88f38.css rel=prefetch>
     <link href=/css/errorModal.fbaa6531.css rel=prefetch>
     <link href=/css/login.6bc2a293.css rel=prefetch>
@@ -31,48 +34,48 @@
     <link href=/css/tags.95166178.css rel=prefetch>
     <link href=/css/userSection.c1ee68c4.css rel=prefetch>
     <link href=/js/404.c7418858.js rel=prefetch>
-    <link href=/js/addComment.d2599662.js rel=prefetch>
-    <link href=/js/addText.c5cda83a.js rel=prefetch>
-    <link href=/js/article.92517df1.js rel=prefetch>
-    <link href=/js/articles.214fa06e.js rel=prefetch>
-    <link href=/js/baseArticle.8badfeca.js rel=prefetch>
+    <link href=/js/addComment.121ecb18.js rel=prefetch>
+    <link href=/js/addText.1f3e8252.js rel=prefetch>
+    <link href=/js/article.326e43a8.js rel=prefetch>
+    <link href=/js/articles.3d86c4d2.js rel=prefetch>
+    <link href=/js/baseArticle.4035e7b2.js rel=prefetch>
     <link href=/js/baseButton.061de134.js rel=prefetch>
     <link href=/js/baseNavbar.81a58f99.js rel=prefetch>
-    <link href=/js/calendar.17240d28.js rel=prefetch>
-    <link href=/js/calendarMonth.42d16f7a.js rel=prefetch>
+    <link href=/js/calendar.b97b8f11.js rel=prefetch>
+    <link href=/js/calendarMonth.22be8f3e.js rel=prefetch>
     <link href=/js/calendarTable.3db6b892.js rel=prefetch>
     <link href=/js/captcha.5f53edd6.js rel=prefetch>
-    <link href=/js/comment.cd876b47.js rel=prefetch>
-    <link href=/js/editPost.03081195.js rel=prefetch>
-    <link href=/js/errorModal.c489c42d.js rel=prefetch>
+    <link href=/js/comment.cbc107a4.js rel=prefetch>
+    <link href=/js/editPost.d816a931.js rel=prefetch>
+    <link href=/js/errorModal.7ffbd7b7.js rel=prefetch>
     <link href=/js/inputEmail.80aaae2b.js rel=prefetch>
     <link href=/js/inputPassword.ba10fdf9.js rel=prefetch>
-    <link href=/js/login.9429a293.js rel=prefetch>
-    <link href=/js/loginChange.945f93f9.js rel=prefetch>
+    <link href=/js/login.8277c0e8.js rel=prefetch>
+    <link href=/js/loginChange.e4a66d31.js rel=prefetch>
     <link href=/js/loginHeader.ed8cddb7.js rel=prefetch>
-    <link href=/js/loginRegistration.d3f0dd35.js rel=prefetch>
-    <link href=/js/loginRestore.5607dcd4.js rel=prefetch>
-    <link href=/js/loginSignIn.5bcebfa7.js rel=prefetch>
-    <link href=/js/mainPage.d4cb3f63.js rel=prefetch>
+    <link href=/js/loginRegistration.8ff74316.js rel=prefetch>
+    <link href=/js/loginRestore.cd021201.js rel=prefetch>
+    <link href=/js/loginSignIn.21251dcb.js rel=prefetch>
+    <link href=/js/mainPage.8600ec2d.js rel=prefetch>
     <link href=/js/moderationBlock.8c826c1d.js rel=prefetch>
-    <link href=/js/profile.8e902ef6.js rel=prefetch>
-    <link href=/js/settings.f55a66c3.js rel=prefetch>
+    <link href=/js/profile.83276cca.js rel=prefetch>
+    <link href=/js/settings.f808d317.js rel=prefetch>
     <link href=/js/socialBlock.ac11ebcc.js rel=prefetch>
-    <link href=/js/stat.095de0da.js rel=prefetch>
-    <link href=/js/tags.35132696.js rel=prefetch>
-    <link href=/js/userSection.fb362f57.js rel=prefetch>
-    <link href=/css/app.1c6d4039.css rel=preload as=style>
-    <link href=/css/chunk-vendors.29736c43.css rel=preload as=style>
-    <link href=/js/app.8cf78fb1.js rel=preload as=script>
-    <link href=/js/chunk-vendors.78ca2341.js rel=preload as=script>
-    <link href=/css/chunk-vendors.29736c43.css rel=stylesheet>
-    <link href=/css/app.1c6d4039.css rel=stylesheet>
+    <link href=/js/stat.e52dc99e.js rel=prefetch>
+    <link href=/js/tags.93d1697b.js rel=prefetch>
+    <link href=/js/userSection.dbe68b90.js rel=prefetch>
+    <link href=/css/app.d1a599fa.css rel=preload as=style>
+    <link href=/css/chunk-vendors.51c52a89.css rel=preload as=style>
+    <link href=/js/app.10301c02.js rel=preload as=script>
+    <link href=/js/chunk-vendors.fcd3af42.js rel=preload as=script>
+    <link href=/css/chunk-vendors.51c52a89.css rel=stylesheet>
+    <link href=/css/app.d1a599fa.css rel=stylesheet>
 </head>
 <body>
 <noscript><strong>We're sorry but devpub doesn't work properly without JavaScript enabled. Please enable it to
     continue.</strong></noscript>
 <div id=app></div>
-<script src=/js/chunk-vendors.78ca2341.js></script>
-<script src=/js/app.8cf78fb1.js></script>
+<script src=/js/chunk-vendors.fcd3af42.js></script>
+<script src=/js/app.10301c02.js></script>
 </body>
 </html>
