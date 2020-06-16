@@ -80,7 +80,8 @@ public class PostServiceImpl implements PostService {
                 posts.sort(Comparator.comparing(Post::getTime));
                 break;
         }
-        return getPosts(posts,  limit, offset, PostModelType.DEFAULT, UserModelType.DEFAULT, defaultDF);
+        log.info("posts: {}", posts);
+        return getPosts(posts,  offset, limit, PostModelType.DEFAULT, UserModelType.DEFAULT, defaultDF);
     }
 
     @Override
@@ -88,7 +89,7 @@ public class PostServiceImpl implements PostService {
         List<Post> posts = query.length() > 0
                 ? postRepository.findAllByTitleContainingOrTextContainingAndModerationStatusAndTimeBeforeAndActiveTrue(query, query, ModerationStatus.ACCEPTED, new Date())
                 : postRepository.findAllByActiveTrueAndModerationStatusAndTimeBefore(ModerationStatus.ACCEPTED, new Date());
-        return getPosts(posts, limit, offset, PostModelType.DEFAULT, UserModelType.DEFAULT, defaultDF);
+        return getPosts(posts, offset, limit, PostModelType.DEFAULT, UserModelType.DEFAULT, defaultDF);
     }
 
     @Override
@@ -116,14 +117,14 @@ public class PostServiceImpl implements PostService {
     @Override
     public Posts searchByTag(int offset, int limit, String tagName) {
         List<Post> posts = postRepository.findAllByTag(tagName.trim());
-        return getPosts(posts, limit, offset, PostModelType.DEFAULT, UserModelType.DEFAULT, dateSRDF);
+        return getPosts(posts, offset, limit, PostModelType.DEFAULT, UserModelType.DEFAULT, dateSRDF);
     }
 
     @Override
     public Posts getPostsForModeration(int offset, int limit, String status, User user) {
         ModerationStatus moderationStatus = ModerationStatus.getEqualStatus(status);
         List<Post> posts = postRepository.findPostsForModeration(user, moderationStatus);
-        return getPosts(posts, limit, offset, PostModelType.FOR_MODERATION, UserModelType.DEFAULT, dateSRDF);
+        return getPosts(posts, offset, limit, PostModelType.FOR_MODERATION, UserModelType.DEFAULT, dateSRDF);
     }
 
     @Override
@@ -143,7 +144,7 @@ public class PostServiceImpl implements PostService {
                 posts = postRepository.findAllByActiveTrueAndUserAndModerationStatus(user, ModerationStatus.ACCEPTED);
                 break;
         }
-        return getPosts(posts, limit, offset, PostModelType.DEFAULT, UserModelType.WITH_EMAIL, dateSRDF);
+        return getPosts(posts, offset, limit, PostModelType.DEFAULT, UserModelType.WITH_EMAIL, dateSRDF);
     }
 
     @Override

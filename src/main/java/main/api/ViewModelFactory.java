@@ -17,9 +17,9 @@ public class ViewModelFactory {
 
     private static final int ANNOUNCE_SIZE = 300;
 
-    public static Posts getPosts(List<main.model.Post> posts, int limit, int offset, PostModelType pt, UserModelType ut, SimpleDateFormat sdf)
+    public static Posts getPosts(List<main.model.Post> posts, int offset, int limit, PostModelType pt, UserModelType ut, SimpleDateFormat sdf)
     {
-        return createPosts(getElementsInRange(posts, limit, offset), pt, ut, sdf);
+        return createPosts(getElementsInRange(posts, offset, limit), pt, ut, sdf);
     }
 
     public static PostBehavior getSinglePost(main.model.Post post, SimpleDateFormat sdf)
