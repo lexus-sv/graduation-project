@@ -73,7 +73,7 @@ public class ViewModelFactory {
     public static UserFullInfo getFullInfoUser(main.model.User user, int postsForModeration)
     {
         return new UserFullInfo(user.getId(), user.getName(), user.getPhoto(), user.getEmail(),
-                user.isModerator(), user.getModeratedPosts().size() + postsForModeration, user.isModerator());
+                user.isModerator(), postsForModeration, user.isModerator());
     }
 
     /**
