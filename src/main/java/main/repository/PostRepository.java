@@ -18,11 +18,14 @@ import java.util.List;
 public interface PostRepository extends JpaRepository<Post, Integer> {
     Page<Post> findAllByActiveTrueAndModerationStatusAndTimeBefore(ModerationStatus moderationStatus, Date time, Pageable pageable);
 
-    @Query("select p from Post p where p.moderationStatus=?1 and p.time<?2 order by p.postComments.size desc")
+    @Query("select p from Post p where p.moderationStatus=?1 and p.time<?2 order by size(p.postComments) desc")
     Page<Post> findPopular(ModerationStatus moderationStatus, Date date, Pageable pageable);
 
     @Query("select p from Post p left outer join PostVote pv on p=pv.post where p.moderationStatus=?1 and p.time<?2 and (pv.value=true or size(p.postVotes)=0) group by p.id order by count (pv.id) desc")
     Page<Post> findBest(ModerationStatus ms, Date date, Pageable pageable);
+
+    @Query("select count(p) from Post p left outer join PostVote pv on p=pv.post where p.moderationStatus=?1 and p.time<?2 and (pv.value=true or size(p.postVotes)=0) group by p.id order by count (pv.id) desc")
+    List<Long> countBest(ModerationStatus ms, Date date);
 
     int countAllByActiveTrueAndModerationStatusAndTimeBefore(ModerationStatus moderationStatus, Date time);
 

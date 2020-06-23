@@ -71,6 +71,7 @@ public class PostServiceImpl implements PostService {
             case "popular":
                 return getPosts(postRepository.findPopular(ModerationStatus.ACCEPTED, new Date(), PageRequest.of(offset/limit, limit)), count, PostModelType.DEFAULT, UserModelType.DEFAULT, defaultDF);
             case "best":
+                count = postRepository.countBest(ModerationStatus.ACCEPTED, new Date()).size();
                 return getPosts(postRepository.findBest(ModerationStatus.ACCEPTED, new Date(), PageRequest.of(offset/limit, limit)), count, PostModelType.DEFAULT, UserModelType.DEFAULT, defaultDF);
             case "early":
                 return getPosts(postRepository.findAllByActiveTrueAndModerationStatusAndTimeBefore(ModerationStatus.ACCEPTED,
