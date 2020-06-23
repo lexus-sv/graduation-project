@@ -3,9 +3,11 @@ package main.service;
 import main.api.auth.request.LoginUserRequest;
 import main.api.auth.request.PasswordUserRequest;
 import main.api.auth.request.RegisterUserRequest;
+import main.api.auth.request.RestorePasswordRequest;
 import main.api.auth.response.AuthResponse;
 import main.model.User;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 public interface AuthService {
@@ -15,6 +17,6 @@ public interface AuthService {
     AuthResponse authCheck(String token);
     User getAuthorizedUser(String token);
     boolean isAuthorized(String token);
-    AuthResponse passwordRecovery(String email, String url);
+    AuthResponse passwordRecovery(RestorePasswordRequest dto, HttpServletRequest request);
     AuthResponse passwordSet(PasswordUserRequest dto, String referer);
 }

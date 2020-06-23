@@ -13,6 +13,11 @@ public class Posts implements PostBehavior {
 
     private List<PostBehavior> posts;
 
+    public Posts(List<PostBehavior> posts, int count) {
+        this.count = count;
+        this.posts = posts;
+    }
+
     public Posts(List<PostBehavior> posts) {
         this.count = posts.size();
         this.posts = posts;

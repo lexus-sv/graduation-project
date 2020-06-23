@@ -27,18 +27,21 @@ public class CaptchaService {
     @Value("${captcha.expirationTime}")
     private int CAPTCHA_EXPIRATION_TIME;
     private static final String DATA_IMAGE = "data:image/png;base64, ";
-    private final static int CAPTCHA_SIZE =  6;
+    @Value("${captcha.length}")
+    private int CAPTCHA_LENGTH;
     private final static Color FONT_COLOR = Color.WHITE;
     private final static Color IMAGE_BACKGROUND_COLOR = Color.GRAY;
-    private final static int FONT_SIZE = 20;
-    private final static String ALLOWED_SYMBOLS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+    @Value("${captcha.font.size}")
+    private int FONT_SIZE;
+    @Value("${captcha.allowedSymbols}")
+    private String ALLOWED_SYMBOLS;
 
     public CaptchaResponse createCaptcha() throws IOException {
         clearExpiredCaptcha();
 
-        String captcha = generateRandomString(CAPTCHA_SIZE);
-        String secret = generateRandomString(CAPTCHA_SIZE*2);
-        int width = CAPTCHA_SIZE*18, height = 35;
+        String captcha = generateRandomString(CAPTCHA_LENGTH);
+        String secret = generateRandomString(CAPTCHA_LENGTH *2);
+        int width = CAPTCHA_LENGTH *18, height = 35;
         BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.OPAQUE);
         Graphics graphics = bufferedImage.createGraphics();
         graphics.setFont(new Font("Arial", Font.BOLD, FONT_SIZE));

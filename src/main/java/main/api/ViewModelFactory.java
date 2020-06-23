@@ -8,6 +8,8 @@ import main.api.post.tag.Tags;
 import main.api.user.*;
 import main.model.PostVote;
 import org.jsoup.Jsoup;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -15,11 +17,12 @@ import java.util.List;
 
 public class ViewModelFactory {
 
+    @Value("${post.announce.length}")
     private static final int ANNOUNCE_SIZE = 300;
 
-    public static Posts getPosts(List<main.model.Post> posts, int offset, int limit, PostModelType pt, UserModelType ut, SimpleDateFormat sdf)
+    public static Posts getPosts(Page<main.model.Post> posts, int globalCount, PostModelType pt, UserModelType ut, SimpleDateFormat sdf)
     {
-        return createPosts(getElementsInRange(posts, offset, limit), pt, ut, sdf);
+        return createPosts(posts, globalCount, pt, ut, sdf);
     }
 
     public static PostBehavior getSinglePost(main.model.Post post, SimpleDateFormat sdf)
@@ -33,7 +36,7 @@ public class ViewModelFactory {
      * @param pt    needed post format for response
      * @param ut    needed user format for response
      */
-    private static Posts createPosts(List<main.model.Post> posts, PostModelType pt, UserModelType ut, SimpleDateFormat sdf)
+    private static Posts createPosts(Page<main.model.Post> posts, int globalCount, PostModelType pt, UserModelType ut, SimpleDateFormat sdf)
     {
         List<PostBehavior> formattedPosts = new ArrayList<>();
         posts.forEach(post -> {//For each post in the list formats the data for response
@@ -41,7 +44,7 @@ public class ViewModelFactory {
             PostBehavior p = getPostOfType(pt, post, user, sdf);
             formattedPosts.add(p);
         });
-        return new Posts(formattedPosts);
+        return new Posts(formattedPosts, globalCount);
     }
 
     /**
@@ -142,26 +145,6 @@ public class ViewModelFactory {
         tags.forEach(tag -> formattedTags.add(new Tag(tag.getName(), ((double) tag.getTaggedPosts().stream()
                 .filter(ttp -> ttp.getPost().isActive()).count() / finalSize) / maxWeight)));
         return new Tags(formattedTags);
-    }
-
-
-    private static List<main.model.Post> getElementsInRange(List<main.model.Post> list, int offset, int limit)
-    {
-        int lastElementIndex = offset + limit;
-        int lastPostIndex = list.size();
-        if (lastPostIndex >= offset)
-        {//если есть элементы входящие в нужный диапазон
-            if (lastElementIndex <= lastPostIndex)
-            {//если все элементы с нужными индексами есть в листе
-                return list.subList(offset, lastElementIndex);
-            } else
-            {//если не хватает элементов, то в посты записываем остаток, считая от offset
-                return list.subList(offset, lastPostIndex);
-            }
-        } else
-        {
-            return new ArrayList<>();
-        }
     }
 
     private static String getAnnounceFromText(String text)

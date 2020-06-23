@@ -20,11 +20,16 @@ import java.io.IOException;
 @RequestMapping(value = "/api/auth/")
 public class ApiAuthController {
 
-    @Autowired
-    private AuthServiceImpl authService;
+    private final AuthServiceImpl authService;
+
+    private final CaptchaService captchaService;
 
     @Autowired
-    private CaptchaService captchaService;
+    public ApiAuthController(AuthServiceImpl authService, CaptchaService captchaService)
+    {
+        this.authService = authService;
+        this.captchaService = captchaService;
+    }
 
     @PostMapping(value = "login")
     public ResponseEntity<?> login(@RequestBody LoginUserRequest userDto, HttpServletResponse response) {
@@ -53,14 +58,8 @@ public class ApiAuthController {
 
     @PostMapping(value = "restore")
     public ResponseEntity<?> restorePassword(HttpServletRequest request, @RequestBody RestorePasswordRequest dto){
-        AuthResponse responseDto = authService.passwordRecovery(dto.getEmail(),
-                request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort());
+        AuthResponse responseDto = authService.passwordRecovery(dto, request);
         return ResponseEntity.ok(responseDto);
-    }
-
-    @GetMapping(value = "login/change-password")
-    public void sendToken(@RequestParam(name = "token") String token){
-        System.out.println(token);
     }
 
     @PostMapping(value = "password")

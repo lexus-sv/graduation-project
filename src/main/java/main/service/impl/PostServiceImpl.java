@@ -14,11 +14,18 @@ import main.service.PostService;
 import main.service.Settings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 
 import static main.api.ViewModelFactory.getPosts;
 import static main.api.ViewModelFactory.getSinglePost;
@@ -55,41 +62,41 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Posts getAll(int offset, int limit, String mode) {
-        List<Post> posts = postRepository.findAllByActiveTrueAndModerationStatusAndTimeBefore(ModerationStatus.ACCEPTED, new Date());
+        int count = postRepository.countAllByActiveTrueAndModerationStatusAndTimeBefore(ModerationStatus.ACCEPTED, new Date());
         switch (mode) {
             case "recent":
-                posts.sort(Comparator
-                        .comparing(Post::getTime)
-                        .reversed());
-                break;
+                return getPosts(postRepository.findAllByActiveTrueAndModerationStatusAndTimeBefore(ModerationStatus.ACCEPTED,
+                        new Date(), PageRequest.of(offset/limit, limit, Sort.by(Sort.Direction.DESC, "time"))),
+                        count, PostModelType.DEFAULT, UserModelType.DEFAULT, defaultDF);
             case "popular":
-                posts.sort(Comparator.comparing(post -> (post
-                        .getPostComments()
-                        .size())));
-                Collections.reverse(posts);
-                break;
+                return getPosts(postRepository.findPopular(ModerationStatus.ACCEPTED, new Date(), PageRequest.of(offset/limit, limit)), count, PostModelType.DEFAULT, UserModelType.DEFAULT, defaultDF);
             case "best":
-                posts.sort(Comparator.comparingLong(o -> o
-                        .getPostVotes()
-                        .stream()
-                        .filter(PostVote::isValue)
-                        .count()));
-                Collections.reverse(posts);
-                break;
+                return getPosts(postRepository.findBest(ModerationStatus.ACCEPTED, new Date(), PageRequest.of(offset/limit, limit)), count, PostModelType.DEFAULT, UserModelType.DEFAULT, defaultDF);
             case "early":
-                posts.sort(Comparator.comparing(Post::getTime));
-                break;
+                return getPosts(postRepository.findAllByActiveTrueAndModerationStatusAndTimeBefore(ModerationStatus.ACCEPTED,
+                        new Date(), PageRequest.of(offset/limit, limit, Sort.by(Sort.Direction.ASC, "time"))),
+                        count, PostModelType.DEFAULT, UserModelType.DEFAULT, defaultDF);
         }
-        log.info("posts: {}", posts);
-        return getPosts(posts,  offset, limit, PostModelType.DEFAULT, UserModelType.DEFAULT, defaultDF);
+        return null;
     }
 
     @Override
     public Posts search(int offset, int limit, String query) {
-        List<Post> posts = query.length() > 0
-                ? postRepository.findAllByTitleContainingOrTextContainingAndModerationStatusAndTimeBeforeAndActiveTrue(query, query, ModerationStatus.ACCEPTED, new Date())
-                : postRepository.findAllByActiveTrueAndModerationStatusAndTimeBefore(ModerationStatus.ACCEPTED, new Date());
-        return getPosts(posts, offset, limit, PostModelType.DEFAULT, UserModelType.DEFAULT, defaultDF);
+        int count = 0;
+        if(query.length()>0)
+        {
+            count = postRepository.countAllByTitleContainingOrTextContainingAndModerationStatusAndTimeBeforeAndActiveTrue(query, query, ModerationStatus.ACCEPTED, new Date());
+            return getPosts(postRepository
+                    .findAllByTitleContainingOrTextContainingAndModerationStatusAndTimeBeforeAndActiveTrue(query, query, ModerationStatus.ACCEPTED, new Date(), PageRequest
+                            .of(offset / limit, limit)), count, PostModelType.DEFAULT, UserModelType.DEFAULT, defaultDF);
+        }
+         else
+        {
+            count = postRepository.countAllByActiveTrueAndModerationStatusAndTimeBefore(ModerationStatus.ACCEPTED, new Date());
+            return getPosts(postRepository
+                    .findAllByActiveTrueAndModerationStatusAndTimeBefore(ModerationStatus.ACCEPTED, new Date(), PageRequest
+                            .of(offset / limit, limit)), count, PostModelType.DEFAULT, UserModelType.DEFAULT, defaultDF);
+        }
     }
 
     @Override
@@ -110,41 +117,45 @@ public class PostServiceImpl implements PostService {
         if (!isValidDate(date))
             throw new IllegalArgumentException("Invalid date");
 
-        List<Post> posts = postRepository.findActiveByDate(date);
-        return getPosts(posts, limit, offset, PostModelType.DEFAULT, UserModelType.DEFAULT, dateSRDF);
+        int count = postRepository.countByDate(date);
+        Page<Post> posts = postRepository.findActiveByDate(date, PageRequest.of(offset/limit, limit));
+        return getPosts(posts, count, PostModelType.DEFAULT, UserModelType.DEFAULT, dateSRDF);
     }
 
     @Override
     public Posts searchByTag(int offset, int limit, String tagName) {
-        List<Post> posts = postRepository.findAllByTag(tagName.trim());
-        return getPosts(posts, offset, limit, PostModelType.DEFAULT, UserModelType.DEFAULT, dateSRDF);
+        int count = postRepository.countByTagName(tagName.toLowerCase());
+        Page<Post> posts = postRepository.findAllByTag(tagName.trim(), PageRequest.of(offset/limit, limit));
+        return getPosts(posts, count, PostModelType.DEFAULT, UserModelType.DEFAULT, dateSRDF);
     }
 
     @Override
     public Posts getPostsForModeration(int offset, int limit, String status, User user) {
         ModerationStatus moderationStatus = ModerationStatus.getEqualStatus(status);
-        List<Post> posts = postRepository.findPostsForModeration(user, moderationStatus);
-        return getPosts(posts, offset, limit, PostModelType.FOR_MODERATION, UserModelType.DEFAULT, dateSRDF);
+        int count = postRepository.countByModerationStatusAndActiveTrue(moderationStatus);
+        Page<Post> posts = postRepository.findPostsForModeration(user, moderationStatus, PageRequest.of(offset/limit, limit));
+        return getPosts(posts, count, PostModelType.FOR_MODERATION, UserModelType.DEFAULT, dateSRDF);
     }
 
     @Override
     public Posts getMyPosts(int offset, int limit, String status, User user) {
-        List<Post> posts = new ArrayList<>();
+        Pageable pageable = PageRequest.of(offset/limit, limit);
+        int count = 0;
         switch (status) {
             case "inactive":
-                posts = postRepository.findAllByActiveFalseAndUser(user);
-                break;
+                count = postRepository.countAllByActiveFalseAndUser(user);
+                return getPosts(postRepository.findAllByActiveFalseAndUser(user, pageable), count, PostModelType.DEFAULT, UserModelType.WITH_EMAIL, dateSRDF);
             case "pending":
-                posts = postRepository.findAllByActiveTrueAndUserAndModerationStatus(user, ModerationStatus.NEW);
-                break;
+                count = postRepository.countAllByActiveTrueAndModerationStatusAndTimeBefore(ModerationStatus.NEW, new Date());
+                return getPosts(postRepository.findAllByActiveTrueAndUserAndModerationStatus(user, ModerationStatus.NEW, pageable), count, PostModelType.DEFAULT, UserModelType.WITH_EMAIL, dateSRDF);
             case "declined":
-                posts = postRepository.findAllByActiveTrueAndUserAndModerationStatus(user, ModerationStatus.DECLINED);
-                break;
+                count = postRepository.countAllByActiveTrueAndModerationStatusAndTimeBefore(ModerationStatus.DECLINED, new Date());
+                return getPosts(postRepository.findAllByActiveTrueAndUserAndModerationStatus(user, ModerationStatus.DECLINED, pageable), count, PostModelType.DEFAULT, UserModelType.WITH_EMAIL, dateSRDF);
             case "published":
-                posts = postRepository.findAllByActiveTrueAndUserAndModerationStatus(user, ModerationStatus.ACCEPTED);
-                break;
+                count = postRepository.countAllByActiveTrueAndModerationStatusAndTimeBefore(ModerationStatus.ACCEPTED, new Date());
+                return getPosts(postRepository.findAllByActiveTrueAndUserAndModerationStatus(user, ModerationStatus.ACCEPTED, pageable), count, PostModelType.DEFAULT, UserModelType.WITH_EMAIL, dateSRDF);
         }
-        return getPosts(posts, offset, limit, PostModelType.DEFAULT, UserModelType.WITH_EMAIL, dateSRDF);
+        throw new IllegalArgumentException("wrong status");
     }
 
     @Override

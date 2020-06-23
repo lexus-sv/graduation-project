@@ -1,6 +1,7 @@
 package main.controller;
 
 import main.api.post.AddPostRequest;
+import main.api.post.PostAddResponse;
 import main.api.post.PostIdRequest;
 import main.api.post.response.PostWithCommentsAndTags;
 import main.api.post.response.Posts;
@@ -13,6 +14,7 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
+import java.util.HashMap;
 
 @RestController
 public class ApiPostController {
@@ -27,40 +29,38 @@ public class ApiPostController {
     }
 
     @GetMapping(value = "/api/post", params = {"offset", "limit", "mode"})
-    public ResponseEntity<?> getPosts(
+    public ResponseEntity<Posts> getPosts(
             @RequestParam(value = "offset") int offset,
             @RequestParam(value = "limit") int limit,
             @RequestParam(value = "mode") String mode) {
-        return new ResponseEntity(postService.getAll(offset, limit, mode), HttpStatus.OK);
+        return ResponseEntity.ok(postService.getAll(offset, limit, mode));
     }
 
     @GetMapping(value = "/api/post/search", params = {"offset", "limit", "query"})
-    public ResponseEntity searchPosts(
+    public ResponseEntity<Posts> searchPosts(
             @RequestParam(value = "offset") int offset,
             @RequestParam(value = "limit") int limit,
             @RequestParam(value = "query") String query) {
-        return new ResponseEntity(postService.search(offset, limit, query), HttpStatus.OK);
+        return ResponseEntity.ok(postService.search(offset, limit, query));
     }
 
 
     @GetMapping(value = "/api/post/{id}")
-    public ResponseEntity getPostById(@PathVariable int id) {
-        PostWithCommentsAndTags post = postService.findPostById(id);
-        return post != null ? ResponseEntity.ok(post) : new ResponseEntity(HttpStatus.NOT_FOUND);
+    public ResponseEntity<PostWithCommentsAndTags> getPostById(@PathVariable int id) {
+        return ResponseEntity.ok(postService.findPostById(id));
     }
 
     @GetMapping("/api/post/byDate")
-    public ResponseEntity<?> getPostsByDate(
+    public ResponseEntity<Posts> getPostsByDate(
             @RequestParam(name = "offset") int offset,
             @RequestParam(name = "limit") int limit,
             @RequestParam(name = "date") String date
     ) {
-        Posts posts = postService.searchByDate(offset, limit, date);
-        return posts != null ? ResponseEntity.ok(posts) : new ResponseEntity(HttpStatus.BAD_REQUEST);
+        return ResponseEntity.ok(postService.searchByDate(offset, limit, date));
     }
 
     @GetMapping("/api/post/byTag")
-    public ResponseEntity<?> getPostsByTag(
+    public ResponseEntity<Posts> getPostsByTag(
             @RequestParam(name = "offset") int offset,
             @RequestParam(name = "limit") int limit,
             @RequestParam(name = "tag") String tag
@@ -69,56 +69,48 @@ public class ApiPostController {
     }
     @Secured("ROLE_MODERATOR")
     @GetMapping("/api/post/moderation")
-    public ResponseEntity<?> moderation(
+    public ResponseEntity<Posts> moderation(
             @CookieValue(value = "token", defaultValue = "invalid") String token,
             @RequestParam(value = "offset") int offset,
             @RequestParam(value = "limit") int limit,
             @RequestParam(value = "status") String status
     ) {
-        Posts posts = postService.getPostsForModeration(offset, limit, status, authService.getAuthorizedUser(token));
-        return posts != null ? ResponseEntity.ok(posts) : new ResponseEntity(HttpStatus.UNAUTHORIZED);
+        return ResponseEntity.ok(postService.getPostsForModeration(offset, limit, status, authService.getAuthorizedUser(token)));
     }
 
     @Secured("ROLE_USER")
     @GetMapping("/api/post/my")
-    public ResponseEntity my(
+    public ResponseEntity<Posts> my(
             @CookieValue(value = "token", defaultValue = "invalid") String token,
             @RequestParam(value = "offset") int offset,
             @RequestParam(value = "limit") int limit,
             @RequestParam(value = "status") String status) {
-        Posts posts = postService.getMyPosts(offset, limit, status, authService.getAuthorizedUser(token));
-        return posts != null ? ResponseEntity.ok(posts) : new ResponseEntity(HttpStatus.FORBIDDEN);
+        return ResponseEntity.ok(postService.getMyPosts(offset, limit, status, authService.getAuthorizedUser(token)));
     }
     @Secured("ROLE_USER")
     @PostMapping("/api/post")
-    public ResponseEntity<?> add(@CookieValue(value = "token", defaultValue = "invalid") String token, @RequestBody AddPostRequest request) throws ParseException {
+    public ResponseEntity<PostAddResponse> add(@CookieValue(value = "token", defaultValue = "invalid") String token, @RequestBody AddPostRequest request) throws ParseException {
         return ResponseEntity.ok(postService.add(request, authService.getAuthorizedUser(token)));
     }
 
     @Secured("ROLE_USER")
     @PutMapping("/api/post/{id}")
-    public ResponseEntity<?> edit(@PathVariable int id, @RequestBody AddPostRequest request){
+    public ResponseEntity<PostAddResponse> edit(@PathVariable int id, @RequestBody AddPostRequest request){
         return ResponseEntity.ok(postService.edit(id, request));
     }
 
     @Secured("ROLE_USER")
     @PostMapping("/api/post/like")
-    public ResponseEntity likeVote(@CookieValue(value = "token", defaultValue = "invalid") String token,
+    public ResponseEntity<HashMap<String, Boolean>> likeVote(@CookieValue(value = "token", defaultValue = "invalid") String token,
                                    @RequestBody PostIdRequest request){
-        Object response = postService.like(request, authService.getAuthorizedUser(token));
-        return response != null
-                ? ResponseEntity.ok(response)
-                : new ResponseEntity(HttpStatus.NO_CONTENT);
+        return ResponseEntity.ok(postService.like(request, authService.getAuthorizedUser(token)));
     }
 
     @Secured("ROLE_USER")
     @PostMapping("/api/post/dislike")
-    public ResponseEntity dislikeVote(
+    public ResponseEntity<HashMap<String, Boolean>> dislikeVote(
             @CookieValue(value = "token", defaultValue = "invalid") String token,
             @RequestBody PostIdRequest request){
-        Object response = postService.dislike(request, authService.getAuthorizedUser(token));
-        return response != null
-                ? ResponseEntity.ok(response)
-                : new ResponseEntity(HttpStatus.NO_CONTENT);
+        return ResponseEntity.ok(postService.dislike(request, authService.getAuthorizedUser(token)));
     }
 }

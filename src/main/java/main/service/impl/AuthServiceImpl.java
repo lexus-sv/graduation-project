@@ -6,6 +6,7 @@ import main.api.ViewModelFactory;
 import main.api.auth.request.LoginUserRequest;
 import main.api.auth.request.PasswordUserRequest;
 import main.api.auth.request.RegisterUserRequest;
+import main.api.auth.request.RestorePasswordRequest;
 import main.api.auth.response.*;
 import main.api.auth.response.error.PassError;
 import main.api.auth.response.error.RegisterError;
@@ -27,6 +28,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -82,7 +84,7 @@ public class AuthServiceImpl implements AuthService {
             //to seconds, -1 for evading jwt expiration exception because of cookie with token expiring faster then jwt
             log.info("IN login user {} has logged in", user);
             return new LoginUserResponse(true, ViewModelFactory
-                    .getFullInfoUser(user, postRepository.countByModerationStatusNot(ModerationStatus.ACCEPTED)));
+                    .getFullInfoUser(user, postRepository.countByModerationStatusNotAndActiveTrue(ModerationStatus.ACCEPTED)));
         } catch (AuthenticationException e) {
             throw new BadCredentialsException("Invalid username or password");
         }
@@ -116,7 +118,7 @@ public class AuthServiceImpl implements AuthService {
         try {
             return new AuthCheckResponse(true, ViewModelFactory
                     .getFullInfoUser(userService.findByEmail(jwtTokenProvider.getUsername(token)), postRepository
-                            .countByModerationStatusNot(ModerationStatus.ACCEPTED)));
+                            .countByModerationStatusNotAndActiveTrue(ModerationStatus.ACCEPTED)));
         } catch (Exception e) {
             log.info("IN authCheck exception {} caught", e.getClass());
             return new ResultResponse(false);
@@ -136,8 +138,10 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public AuthResponse passwordRecovery(String email, String url)
+    public AuthResponse passwordRecovery(RestorePasswordRequest dto, HttpServletRequest request)
     {
+        String email = dto.getEmail();
+        String url = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
         User user = userService.findByEmail(email);
         if (user != null) {
             user.setCode(captchaService.generateRandomString(50));
