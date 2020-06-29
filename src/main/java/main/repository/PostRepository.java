@@ -53,8 +53,6 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
 
     int countAllByActiveFalseAndUser(User user);
 
-    int countByModerationStatusNotAndActiveTrue(ModerationStatus moderationStatus);
-
     int countByModerationStatusAndActiveTrue(ModerationStatus moderationStatus);
 
     Page<Post> findAllByActiveTrueAndUserAndModerationStatus(User user, ModerationStatus moderationStatus, Pageable pageable);

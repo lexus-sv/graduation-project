@@ -3,7 +3,7 @@ package main.service;
 import main.api.post.AddPostRequest;
 import main.api.post.PostAddResponse;
 import main.api.post.PostIdRequest;
-import main.api.post.response.PostWithCommentsAndTags;
+import main.api.post.response.Post;
 import main.api.post.response.Posts;
 import main.model.User;
 
@@ -15,7 +15,7 @@ public interface PostService {
 
     Posts search(int offset, int limit, String query);
 
-    PostWithCommentsAndTags findPostById(int id);
+    Post findPostById(int id);
 
     Posts searchByDate(int offset, int limit, String date);
 

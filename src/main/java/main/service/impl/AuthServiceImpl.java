@@ -84,7 +84,7 @@ public class AuthServiceImpl implements AuthService {
             //to seconds, -1 for evading jwt expiration exception because of cookie with token expiring faster then jwt
             log.info("IN login user {} has logged in", user);
             return new LoginUserResponse(true, ViewModelFactory
-                    .getFullInfoUser(user, postRepository.countByModerationStatusNotAndActiveTrue(ModerationStatus.ACCEPTED)));
+                    .getFullInfoUser(user, postRepository.countByModerationStatusAndActiveTrue(ModerationStatus.NEW)));
         } catch (AuthenticationException e) {
             throw new BadCredentialsException("Invalid username or password");
         }
@@ -118,7 +118,7 @@ public class AuthServiceImpl implements AuthService {
         try {
             return new AuthCheckResponse(true, ViewModelFactory
                     .getFullInfoUser(userService.findByEmail(jwtTokenProvider.getUsername(token)), postRepository
-                            .countByModerationStatusNotAndActiveTrue(ModerationStatus.ACCEPTED)));
+                            .countByModerationStatusAndActiveTrue(ModerationStatus.NEW)));
         } catch (Exception e) {
             log.info("IN authCheck exception {} caught", e.getClass());
             return new ResultResponse(false);

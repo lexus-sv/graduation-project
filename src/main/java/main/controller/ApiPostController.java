@@ -3,12 +3,11 @@ package main.controller;
 import main.api.post.AddPostRequest;
 import main.api.post.PostAddResponse;
 import main.api.post.PostIdRequest;
-import main.api.post.response.PostWithCommentsAndTags;
+import main.api.post.response.Post;
 import main.api.post.response.Posts;
 import main.service.AuthService;
 import main.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
@@ -46,7 +45,7 @@ public class ApiPostController {
 
 
     @GetMapping(value = "/api/post/{id}")
-    public ResponseEntity<PostWithCommentsAndTags> getPostById(@PathVariable int id) {
+    public ResponseEntity<Post> getPostById(@PathVariable int id) {
         return ResponseEntity.ok(postService.findPostById(id));
     }
 

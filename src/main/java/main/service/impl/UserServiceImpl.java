@@ -16,9 +16,13 @@ import main.service.CaptchaService;
 import main.service.ImageService;
 import main.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartResolver;
+import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 
 import java.util.Date;
 import java.util.List;
@@ -40,7 +44,8 @@ public class UserServiceImpl implements UserService {
     private final String ERROR_PHOTO = "Размер фото превышает 5 мб";
     private final String ERROR_CAPTCHA = "Код с картинки указан неверно";
 
-    private final long maxFileSizeInBytes = 5242880;
+    @Value("${files.maxFileUploadSize}")
+    private int maxFileSizeInBytes;
 
     @Autowired
     public UserServiceImpl(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder, CaptchaService captchaService, ImageService imageService)
@@ -171,7 +176,6 @@ public class UserServiceImpl implements UserService {
         {
             if (photo.getSize() < maxFileSizeInBytes)
             {
-                log.info("here");
                 user.setPhoto(imageService.saveImage(photo, true));
             } else
             {
@@ -218,5 +222,13 @@ public class UserServiceImpl implements UserService {
         Pattern p = Pattern.compile("^[ a-zA-Zа-яА-Я0-9_.-]*$");
         Matcher matcher = p.matcher(name);
         return matcher.matches();
+    }
+
+    @Bean
+    public MultipartResolver multipartResolver() {
+        CommonsMultipartResolver multipartResolver
+                = new CommonsMultipartResolver();
+        multipartResolver.setMaxUploadSize(maxFileSizeInBytes);
+        return multipartResolver;
     }
 }

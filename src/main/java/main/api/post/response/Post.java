@@ -1,24 +1,35 @@
 
 package main.api.post.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import main.api.user.UserBehavior;
+import main.api.post.comment.Comment;
+import main.api.user.UserFullInfo;
+
+import java.util.List;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Post implements PostBehavior{
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@Builder
+public class Post {
 
-    private int id;
+    private Integer id;
     private String time;
-    private UserBehavior user;
+    private UserFullInfo user;
     private String title;
+    private String text;
     private String announce;
-    private int likeCount;
-    private int dislikeCount;
-    private int commentCount;
-    private int viewCount;
+    private Integer likeCount;
+    private Integer dislikeCount;
+    private Integer commentCount;
+    private Integer viewCount;
+
+    private List<Comment> comments;
+    private List<String> tags;
 
 }

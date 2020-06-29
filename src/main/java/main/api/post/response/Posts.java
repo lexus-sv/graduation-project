@@ -1,25 +1,17 @@
 package main.api.post.response;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Data
-@NoArgsConstructor
-public class Posts implements PostBehavior {
+@AllArgsConstructor
+public class Posts {
+
+    private List<Post> posts;
 
     private int count;
 
-    private List<PostBehavior> posts;
-
-    public Posts(List<PostBehavior> posts, int count) {
-        this.count = count;
-        this.posts = posts;
-    }
-
-    public Posts(List<PostBehavior> posts) {
-        this.count = posts.size();
-        this.posts = posts;
-    }
 }

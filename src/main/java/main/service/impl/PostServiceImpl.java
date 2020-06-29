@@ -3,7 +3,6 @@ package main.service.impl;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import main.api.post.*;
-import main.api.post.response.PostWithCommentsAndTags;
 import main.api.post.response.Posts;
 import main.api.user.UserModelType;
 import main.model.*;
@@ -65,9 +64,7 @@ public class PostServiceImpl implements PostService {
         int count = postRepository.countAllByActiveTrueAndModerationStatusAndTimeBefore(ModerationStatus.ACCEPTED, new Date());
         switch (mode) {
             case "recent":
-                return getPosts(postRepository.findAllByActiveTrueAndModerationStatusAndTimeBefore(ModerationStatus.ACCEPTED,
-                        new Date(), PageRequest.of(offset/limit, limit, Sort.by(Sort.Direction.DESC, "time"))),
-                        count, PostModelType.DEFAULT, UserModelType.DEFAULT, defaultDF);
+                return getRecent(offset, limit, count);
             case "popular":
                 return getPosts(postRepository.findPopular(ModerationStatus.ACCEPTED, new Date(), PageRequest.of(offset/limit, limit)), count, PostModelType.DEFAULT, UserModelType.DEFAULT, defaultDF);
             case "best":
@@ -79,6 +76,13 @@ public class PostServiceImpl implements PostService {
                         count, PostModelType.DEFAULT, UserModelType.DEFAULT, defaultDF);
         }
         return null;
+    }
+
+    private Posts getRecent(int offset, int limit, int count)
+    {
+        return getPosts(postRepository.findAllByActiveTrueAndModerationStatusAndTimeBefore(ModerationStatus.ACCEPTED,
+                new Date(), PageRequest.of(offset/limit, limit, Sort.by(Sort.Direction.DESC, "time"))),
+                count, PostModelType.DEFAULT, UserModelType.DEFAULT, defaultDF);
     }
 
     @Override
@@ -101,7 +105,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public PostWithCommentsAndTags findPostById(int id) {
+    public main.api.post.response.Post findPostById(int id) {
         Post post = postRepository
                 .findById(id)
                 .orElse(null);
@@ -109,7 +113,7 @@ public class PostServiceImpl implements PostService {
             throw new NullPointerException("Post with id " + id + " was not found");
         post.setViewCount(post.getViewCount() + 1);
         postRepository.save(post);
-        return (PostWithCommentsAndTags) getSinglePost(post, defaultDF);
+        return getSinglePost(post, defaultDF);
     }
 
     @SneakyThrows

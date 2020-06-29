@@ -1,86 +1,31 @@
 
 package main.api.user;
 
-public class UserFullInfo implements UserBehavior {
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.Getter;
 
-    private String email;
+@Builder
+@Getter
+@AllArgsConstructor
+@Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class UserFullInfo {
 
-    private int id;
-
-    private boolean moderation;
-
-    private int moderationCount;
+    private Integer id;
 
     private String name;
 
     private String photo;
 
-    private boolean settings;
+    private String email;
 
-    public UserFullInfo(int id, String name, String photo, String email, boolean moderation, int moderationCount, boolean settings) {
-        this.email = email;
-        this.id = id;
-        this.moderation = moderation;
-        this.moderationCount = moderationCount;
-        this.name = name;
-        this.photo = photo;
-        this.settings = settings;
-    }
+    private Boolean moderation;
 
-    public String getEmail() {
-        return email;
-    }
+    private Integer moderationCount;
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public boolean getModeration() {
-        return moderation;
-    }
-
-    public void setModeration(boolean moderation) {
-        this.moderation = moderation;
-    }
-
-    public int getModerationCount() {
-        return moderationCount;
-    }
-
-    public void setModerationCount(int moderationCount) {
-        this.moderationCount = moderationCount;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getPhoto() {
-        return photo;
-    }
-
-    public void setPhoto(String photo) {
-        this.photo = photo;
-    }
-
-    public boolean getSettings() {
-        return settings;
-    }
-
-    public void setSettings(boolean settings) {
-        this.settings = settings;
-    }
+    private Boolean settings;
 
 }
