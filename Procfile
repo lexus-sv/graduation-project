@@ -1,0 +1,1 @@
+web: java -jar target/lexus-graduation-project-1.0.jar
