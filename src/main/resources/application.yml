@@ -1,0 +1,50 @@
+spring.datasource.url: jdbc:${CLEARDB_DATABASE_URL:mysql://localhost:3306/devpub?serverTimezone=UTC&characterEncoding=utf8}
+spring.datasource.username: root
+spring.datasource.password: root
+spring.jpa.hibernate.ddl-auto: update
+
+
+spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: devpubemailservice@gmail.com
+    password: jkwgjhaxnzqhmmqi
+    properties.mail.smtp.auth: true
+    properties.mail.smtp.starttls: enable=true
+
+captcha:
+  expirationTime: 3600000
+  length: 6
+  font:
+    size: 20
+  allowedSymbols: abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNOPQRSTUVWXYZ1234567890
+
+jwt:
+  token:
+    expirationTime: 604800000
+    secret: jwttokensecret
+
+post:
+  title:
+    minLength: 10
+  text:
+    minLength: 200
+  announce:
+    length: 300
+
+init:
+  title: DevPub
+  subtitle: Рассказы разработчиков
+  phone: +7 903 666-44-55
+  email: alakai20136@gmail.com
+  copyright: Алексей Сухилин
+  copyrightFrom: 2019
+server:
+  port: ${PORT:8080}
+  tomcat:
+    max-swallow-size: 128MB
+files:
+  maxFileUploadSize: 5242880
+
+
