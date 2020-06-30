@@ -26,9 +26,12 @@ public class Settings {
         request.forEach((key,value)->{
             GlobalSettings setting = repository.findByCode(key);
             if(value!=null){
-                settings.put(key, value);
-                setting.setValue(value);
-                repository.save(setting);
+                if(setting!=null)
+                {
+                    settings.put(key, value);
+                    setting.setValue(value);
+                    repository.save(setting);
+                }
             }
         });
     }
