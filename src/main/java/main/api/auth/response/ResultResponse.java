@@ -6,5 +6,6 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class ResultResponse implements AuthResponse {
-    private boolean result;
+
+  private boolean result;
 }

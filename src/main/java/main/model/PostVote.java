@@ -1,67 +1,77 @@
 package main.model;
 
-import javax.persistence.*;
 import java.util.Date;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 @Entity
 @Table(name = "post_votes")
 public class PostVote {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private int id;
 
-    @ManyToOne
-    @JoinColumn(name = "post_id", nullable = false)
-    private Post post;
+  @ManyToOne
+  @JoinColumn(name = "user_id", nullable = false)
+  private User user;
 
-    @Column(nullable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date time;
+  @ManyToOne
+  @JoinColumn(name = "post_id", nullable = false)
+  private Post post;
 
-    @Column(nullable = false, columnDefinition = "TINYINT(1)")
-    private boolean value;
+  @Column(nullable = false)
+  @Temporal(TemporalType.TIMESTAMP)
+  private Date time;
 
-    public int getId() {
-        return id;
-    }
+  @Column(nullable = false, columnDefinition = "TINYINT(1)")
+  private boolean value;
 
-    public void setId(int id) {
-        this.id = id;
-    }
+  public int getId() {
+    return id;
+  }
 
-    public User getUser() {
-        return user;
-    }
+  public void setId(int id) {
+    this.id = id;
+  }
 
-    public void setUser(User user) {
-        this.user = user;
-    }
+  public User getUser() {
+    return user;
+  }
 
-    public Post getPost() {
-        return post;
-    }
+  public void setUser(User user) {
+    this.user = user;
+  }
 
-    public void setPost(Post post) {
-        this.post = post;
-    }
+  public Post getPost() {
+    return post;
+  }
 
-    public Date getTime() {
-        return time;
-    }
+  public void setPost(Post post) {
+    this.post = post;
+  }
 
-    public void setTime(Date time) {
-        this.time = time;
-    }
+  public Date getTime() {
+    return time;
+  }
 
-    public boolean isValue() {
-        return value;
-    }
+  public void setTime(Date time) {
+    this.time = time;
+  }
 
-    public void setValue(boolean value) {
-        this.value = value;
-    }
+  public boolean isValue() {
+    return value;
+  }
+
+  public void setValue(boolean value) {
+    this.value = value;
+  }
 }

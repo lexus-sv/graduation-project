@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PostIdRequest {
-    @JsonProperty("post_id")
-    private int postId;
+
+  @JsonProperty("post_id")
+  private int postId;
 }

@@ -1,4 +1,3 @@
-
 package main.api.user;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -14,18 +13,18 @@ import lombok.Getter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserFullInfo {
 
-    private Integer id;
+  private Integer id;
 
-    private String name;
+  private String name;
 
-    private String photo;
+  private String photo;
 
-    private String email;
+  private String email;
 
-    private Boolean moderation;
+  private Boolean moderation;
 
-    private Integer moderationCount;
+  private Integer moderationCount;
 
-    private Boolean settings;
+  private Boolean settings;
 
 }

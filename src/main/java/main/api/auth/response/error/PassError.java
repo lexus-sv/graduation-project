@@ -8,7 +8,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PassError {
-    private String code;
-    private String password;
-    private String captcha;
+
+  private String code;
+  private String password;
+  private String captcha;
 }

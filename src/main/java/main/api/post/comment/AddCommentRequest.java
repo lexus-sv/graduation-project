@@ -11,9 +11,10 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString
 public class AddCommentRequest {
-    @JsonProperty("parent_id")
-    private Integer parentId;
-    @JsonProperty("post_id")
-    private Integer postId;
-    private String text;
+
+  @JsonProperty("parent_id")
+  private Integer parentId;
+  @JsonProperty("post_id")
+  private Integer postId;
+  private String text;
 }

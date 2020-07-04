@@ -1,94 +1,104 @@
 package main.model;
 
-import org.hibernate.annotations.Type;
-
-import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import org.hibernate.annotations.Type;
 
 @Entity
 @Table(name = "post_comments")
 public class PostComment {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
 
-    @ManyToOne
-    @JoinColumn(name = "parent_id")
-    private PostComment parent;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private int id;
 
-    @OneToMany(mappedBy = "parent")
-    private List<PostComment> children;
+  @ManyToOne
+  @JoinColumn(name = "parent_id")
+  private PostComment parent;
 
-    @ManyToOne
-    @JoinColumn(name = "post_id", nullable = false)
-    private Post post;
+  @OneToMany(mappedBy = "parent")
+  private List<PostComment> children;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+  @ManyToOne
+  @JoinColumn(name = "post_id", nullable = false)
+  private Post post;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(nullable = false)
-    private Date time;
+  @ManyToOne
+  @JoinColumn(name = "user_id", nullable = false)
+  private User user;
 
-    @Type(type = "text")
-    @Column(nullable = false)
-    private String text;
+  @Temporal(TemporalType.TIMESTAMP)
+  @Column(nullable = false)
+  private Date time;
 
-    public int getId() {
-        return id;
-    }
+  @Type(type = "text")
+  @Column(nullable = false)
+  private String text;
 
-    public void setId(int id) {
-        this.id = id;
-    }
+  public int getId() {
+    return id;
+  }
 
-    public PostComment getParent() {
-        return parent;
-    }
+  public void setId(int id) {
+    this.id = id;
+  }
 
-    public void setParent(PostComment parent) {
-        this.parent = parent;
-    }
+  public PostComment getParent() {
+    return parent;
+  }
 
-    public List<PostComment> getChildren() {
-        return children;
-    }
+  public void setParent(PostComment parent) {
+    this.parent = parent;
+  }
 
-    public void setChildren(List<PostComment> children) {
-        this.children = children;
-    }
+  public List<PostComment> getChildren() {
+    return children;
+  }
 
-    public Post getPost() {
-        return post;
-    }
+  public void setChildren(List<PostComment> children) {
+    this.children = children;
+  }
 
-    public void setPost(Post post) {
-        this.post = post;
-    }
+  public Post getPost() {
+    return post;
+  }
 
-    public User getUser() {
-        return user;
-    }
+  public void setPost(Post post) {
+    this.post = post;
+  }
 
-    public void setUser(User user) {
-        this.user = user;
-    }
+  public User getUser() {
+    return user;
+  }
 
-    public Date getTime() {
-        return time;
-    }
+  public void setUser(User user) {
+    this.user = user;
+  }
 
-    public void setTime(Date time) {
-        this.time = time;
-    }
+  public Date getTime() {
+    return time;
+  }
 
-    public String getText() {
-        return text;
-    }
+  public void setTime(Date time) {
+    this.time = time;
+  }
 
-    public void setText(String text) {
-        this.text = text;
-    }
+  public String getText() {
+    return text;
+  }
+
+  public void setText(String text) {
+    this.text = text;
+  }
 }

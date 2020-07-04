@@ -3,60 +3,61 @@ package main.api.post;
 import java.util.List;
 
 public class AddPostRequest {
-    private String time;
-    private boolean active;
-    private String title;
-    private String text;
-    private List<String> tags;
 
-    public AddPostRequest() {
-    }
+  private String time;
+  private boolean active;
+  private String title;
+  private String text;
+  private List<String> tags;
 
-    public AddPostRequest(String time, boolean active, String title, String text, List<String> tags) {
-        this.time = time;
-        this.active = active;
-        this.title = title;
-        this.text = text;
-        this.tags = tags;
-    }
+  public AddPostRequest() {
+  }
 
-    public String getTime() {
-        return time;
-    }
+  public AddPostRequest(String time, boolean active, String title, String text, List<String> tags) {
+    this.time = time;
+    this.active = active;
+    this.title = title;
+    this.text = text;
+    this.tags = tags;
+  }
 
-    public void setTime(String time) {
-        this.time = time;
-    }
+  public String getTime() {
+    return time;
+  }
 
-    public boolean isActive() {
-        return active;
-    }
+  public void setTime(String time) {
+    this.time = time;
+  }
 
-    public void setActive(boolean active) {
-        this.active = active;
-    }
+  public boolean isActive() {
+    return active;
+  }
 
-    public String getTitle() {
-        return title;
-    }
+  public void setActive(boolean active) {
+    this.active = active;
+  }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+  public String getTitle() {
+    return title;
+  }
 
-    public String getText() {
-        return text;
-    }
+  public void setTitle(String title) {
+    this.title = title;
+  }
 
-    public void setText(String text) {
-        this.text = text;
-    }
+  public String getText() {
+    return text;
+  }
 
-    public List<String> getTags() {
-        return tags;
-    }
+  public void setText(String text) {
+    this.text = text;
+  }
 
-    public void setTags(List<String> tags) {
-        this.tags = tags;
-    }
+  public List<String> getTags() {
+    return tags;
+  }
+
+  public void setTags(List<String> tags) {
+    this.tags = tags;
+  }
 }

@@ -1,4 +1,3 @@
-
 package main.api.post.comment;
 
 
@@ -12,9 +11,9 @@ import main.api.user.UserFullInfo;
 @NoArgsConstructor
 public class Comment {
 
-    private int id;
-    private String text;
-    private String time;
-    private UserFullInfo user;
+  private int id;
+  private String text;
+  private String time;
+  private UserFullInfo user;
 
 }

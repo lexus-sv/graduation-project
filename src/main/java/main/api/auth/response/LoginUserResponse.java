@@ -9,6 +9,7 @@ import main.api.user.UserFullInfo;
 @AllArgsConstructor
 @NoArgsConstructor
 public class LoginUserResponse implements AuthResponse {
-    private boolean result;
-    private UserFullInfo user;
+
+  private boolean result;
+  private UserFullInfo user;
 }

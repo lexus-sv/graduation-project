@@ -1,150 +1,163 @@
 package main.model;
 
-import org.hibernate.annotations.Type;
-
-import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import org.hibernate.annotations.Type;
 
 @Entity
 @Table(name = "posts")
 public class Post {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
 
-    @Type(type = "true_false")
-    @Column(nullable = false)
-    private boolean active;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private int id;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private ModerationStatus moderationStatus;
+  @Type(type = "true_false")
+  @Column(nullable = false)
+  private boolean active;
 
-    @ManyToOne
-    @JoinColumn(name = "moderator_id")
-    private User moderator;
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private ModerationStatus moderationStatus;
 
-    @ManyToOne
-    @JoinColumn(name = "author_id",nullable = false)
-    private User user;
+  @ManyToOne
+  @JoinColumn(name = "moderator_id")
+  private User moderator;
 
-    @Temporal(value = TemporalType.TIMESTAMP)
-    @Column(nullable = false)
-    private Date time;
+  @ManyToOne
+  @JoinColumn(name = "author_id", nullable = false)
+  private User user;
 
-    @Column(nullable = false)
-    private String title;
+  @Temporal(value = TemporalType.TIMESTAMP)
+  @Column(nullable = false)
+  private Date time;
 
-    @Type(type = "text")
-    @Column(nullable = false)
-    private String text;
+  @Column(nullable = false)
+  private String title;
 
-    @Column(nullable = false)
-    private int viewCount;
+  @Type(type = "text")
+  @Column(nullable = false)
+  private String text;
 
-    @OneToMany(mappedBy = "post")
-    private List<PostVote> postVotes;
+  @Column(nullable = false)
+  private int viewCount;
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
-    private List<TagToPost> tags;
+  @OneToMany(mappedBy = "post")
+  private List<PostVote> postVotes;
 
-    @OneToMany(mappedBy = "post")
-    private List<PostComment> postComments;
+  @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+  private List<TagToPost> tags;
 
-    public int getId() {
-        return id;
-    }
+  @OneToMany(mappedBy = "post")
+  private List<PostComment> postComments;
 
-    public void setId(int id) {
-        this.id = id;
-    }
+  public int getId() {
+    return id;
+  }
 
-    public boolean isActive() {
-        return active;
-    }
+  public void setId(int id) {
+    this.id = id;
+  }
 
-    public void setActive(boolean active) {
-        this.active = active;
-    }
+  public boolean isActive() {
+    return active;
+  }
 
-    public ModerationStatus getModerationStatus() {
-        return moderationStatus;
-    }
+  public void setActive(boolean active) {
+    this.active = active;
+  }
 
-    public void setModerationStatus(ModerationStatus moderationStatus) {
-        this.moderationStatus = moderationStatus;
-    }
+  public ModerationStatus getModerationStatus() {
+    return moderationStatus;
+  }
 
-    public User getModerator() {
-        return moderator;
-    }
+  public void setModerationStatus(ModerationStatus moderationStatus) {
+    this.moderationStatus = moderationStatus;
+  }
 
-    public void setModerator(User moderator) {
-        this.moderator = moderator;
-    }
+  public User getModerator() {
+    return moderator;
+  }
 
-    public User getUser() {
-        return user;
-    }
+  public void setModerator(User moderator) {
+    this.moderator = moderator;
+  }
 
-    public void setUser(User author) {
-        this.user = author;
-    }
+  public User getUser() {
+    return user;
+  }
 
-    public Date getTime() {
-        return time;
-    }
+  public void setUser(User author) {
+    this.user = author;
+  }
 
-    public void setTime(Date time) {
-        this.time = time;
-    }
+  public Date getTime() {
+    return time;
+  }
 
-    public String getTitle() {
-        return title;
-    }
+  public void setTime(Date time) {
+    this.time = time;
+  }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+  public String getTitle() {
+    return title;
+  }
 
-    public String getText() {
-        return text;
-    }
+  public void setTitle(String title) {
+    this.title = title;
+  }
 
-    public void setText(String text) {
-        this.text = text;
-    }
+  public String getText() {
+    return text;
+  }
 
-    public int getViewCount() {
-        return viewCount;
-    }
+  public void setText(String text) {
+    this.text = text;
+  }
 
-    public void setViewCount(int vievCount) {
-        this.viewCount = vievCount;
-    }
+  public int getViewCount() {
+    return viewCount;
+  }
 
-    public List<PostVote> getPostVotes() {
-        return postVotes;
-    }
+  public void setViewCount(int vievCount) {
+    this.viewCount = vievCount;
+  }
 
-    public void setPostVotes(List<PostVote> postVotes) {
-        this.postVotes = postVotes;
-    }
+  public List<PostVote> getPostVotes() {
+    return postVotes;
+  }
 
-    public List<TagToPost> getTags() {
-        return tags;
-    }
+  public void setPostVotes(List<PostVote> postVotes) {
+    this.postVotes = postVotes;
+  }
 
-    public void setTags(List<TagToPost> tags) {
-        this.tags = tags;
-    }
+  public List<TagToPost> getTags() {
+    return tags;
+  }
 
-    public List<PostComment> getPostComments() {
-        return postComments;
-    }
+  public void setTags(List<TagToPost> tags) {
+    this.tags = tags;
+  }
 
-    public void setPostComments(List<PostComment> postComments) {
-        this.postComments = postComments;
-    }
+  public List<PostComment> getPostComments() {
+    return postComments;
+  }
+
+  public void setPostComments(List<PostComment> postComments) {
+    this.postComments = postComments;
+  }
 }

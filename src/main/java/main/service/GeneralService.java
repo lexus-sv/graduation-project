@@ -1,5 +1,7 @@
 package main.service;
 
+import java.util.HashMap;
+import javax.servlet.http.HttpServletResponse;
 import main.InitInfo;
 import main.api.general.ModerationRequest;
 import main.api.general.StatisticsResponse;
@@ -11,30 +13,29 @@ import main.api.post.tag.Tags;
 import main.model.User;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.HashMap;
-
 public interface GeneralService {
-    InitInfo init();
 
-    HashMap<String, Boolean> getSettings();
+  InitInfo init();
 
-    Tags getTags(String query);
+  HashMap<String, Boolean> getSettings();
 
-    String uploadImage(MultipartFile file);
+  Tags getTags(String query);
 
-    byte[] getImageFromStorage(String path);
+  String uploadImage(MultipartFile file);
 
-    HashMap<Object, Object> addComment(AddCommentRequest request, User user);
+  byte[] getImageFromStorage(String path);
 
-    void moderate(ModerationRequest request, User user);
+  HashMap<Object, Object> addComment(AddCommentRequest request, User user);
 
-    CalendarResponse getCalendar(Integer year);
+  void moderate(ModerationRequest request, User user);
 
-    ProfileEditResponse editProfile(ProfileEditRequest request, User user);
+  CalendarResponse getCalendar(Integer year);
 
-    StatisticsResponse getMyStatistics(User user);
+  ProfileEditResponse editProfile(ProfileEditRequest request, User user, HttpServletResponse response);
 
-    StatisticsResponse getAllStatistics();
+  StatisticsResponse getMyStatistics(User user);
 
-    void editSettings(HashMap<String, Boolean> request);
+  StatisticsResponse getAllStatistics();
+
+  void editSettings(HashMap<String, Boolean> request);
 }

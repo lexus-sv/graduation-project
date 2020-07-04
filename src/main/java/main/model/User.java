@@ -1,149 +1,157 @@
 package main.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.ToString;
-import org.hibernate.annotations.Type;
-
-import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import lombok.ToString;
+import org.hibernate.annotations.Type;
 
 @Entity
 @Table(name = "users")
 @ToString
 public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
 
-    @Type(type = "true_false")
-    @Column(nullable = false)
-    private boolean isModerator;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private int id;
 
-    @Temporal(value = TemporalType.TIMESTAMP)
-    @Column(nullable = false)
-    private Date registrationDate;
+  @Type(type = "true_false")
+  @Column(nullable = false)
+  private boolean isModerator;
 
-    @Column(nullable = false)
-    private String name;
+  @Temporal(value = TemporalType.TIMESTAMP)
+  @Column(nullable = false)
+  private Date registrationDate;
 
-    @Column(nullable = false)
-    private String email;
+  @Column(nullable = false)
+  private String name;
 
-    @Column(nullable = false)
-    @JsonIgnore
-    private String password;
+  @Column(nullable = false)
+  private String email;
 
-    private String code;
+  @Column(nullable = false)
+  @JsonIgnore
+  private String password;
 
-    @Type(type = "text")
-    private String photo;
+  private String code;
 
-    @OneToMany(mappedBy = "moderator")
-    private List<Post> moderatedPosts;
+  @Type(type = "text")
+  private String photo;
 
-    @OneToMany(mappedBy = "user")
-    private List<Post> authorPosts;
+  @OneToMany(mappedBy = "moderator")
+  private List<Post> moderatedPosts;
 
-    @OneToMany(mappedBy = "user")
-    private List<PostVote> postVotes;
+  @OneToMany(mappedBy = "user")
+  private List<Post> authorPosts;
 
-    @OneToMany(mappedBy = "user")
-    private List<PostComment> postComments;
+  @OneToMany(mappedBy = "user")
+  private List<PostVote> postVotes;
 
-    public int getId() {
-        return id;
-    }
+  @OneToMany(mappedBy = "user")
+  private List<PostComment> postComments;
 
-    public void setId(int id) {
-        this.id = id;
-    }
+  public int getId() {
+    return id;
+  }
 
-    public boolean isModerator() {
-        return isModerator;
-    }
+  public void setId(int id) {
+    this.id = id;
+  }
 
-    public void setModerator(boolean moderator) {
-        isModerator = moderator;
-    }
+  public boolean isModerator() {
+    return isModerator;
+  }
 
-    public Date getRegistrationDate() {
-        return registrationDate;
-    }
+  public void setModerator(boolean moderator) {
+    isModerator = moderator;
+  }
 
-    public void setRegistrationDate(Date registrationDate) {
-        this.registrationDate = registrationDate;
-    }
+  public Date getRegistrationDate() {
+    return registrationDate;
+  }
 
-    public String getName() {
-        return name;
-    }
+  public void setRegistrationDate(Date registrationDate) {
+    this.registrationDate = registrationDate;
+  }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public String getEmail() {
-        return email;
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+  public String getEmail() {
+    return email;
+  }
 
-    public String getPassword() {
-        return password;
-    }
+  public void setEmail(String email) {
+    this.email = email;
+  }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+  public String getPassword() {
+    return password;
+  }
 
-    public String getCode() {
-        return code;
-    }
+  public void setPassword(String password) {
+    this.password = password;
+  }
 
-    public void setCode(String code) {
-        this.code = code;
-    }
+  public String getCode() {
+    return code;
+  }
 
-    public String getPhoto() {
-        return photo;
-    }
+  public void setCode(String code) {
+    this.code = code;
+  }
 
-    public void setPhoto(String photo) {
-        this.photo = photo;
-    }
+  public String getPhoto() {
+    return photo;
+  }
 
-    public List<Post> getModeratedPosts() {
-        return moderatedPosts;
-    }
+  public void setPhoto(String photo) {
+    this.photo = photo;
+  }
 
-    public void setModeratedPosts(List<Post> posts) {
-        this.moderatedPosts = posts;
-    }
+  public List<Post> getModeratedPosts() {
+    return moderatedPosts;
+  }
 
-    public List<Post> getAuthorPosts() {
-        return authorPosts;
-    }
+  public void setModeratedPosts(List<Post> posts) {
+    this.moderatedPosts = posts;
+  }
 
-    public void setAuthorPosts(List<Post> authorPosts) {
-        this.authorPosts = authorPosts;
-    }
+  public List<Post> getAuthorPosts() {
+    return authorPosts;
+  }
 
-    public List<PostVote> getPostVotes() {
-        return postVotes;
-    }
+  public void setAuthorPosts(List<Post> authorPosts) {
+    this.authorPosts = authorPosts;
+  }
 
-    public void setPostVotes(List<PostVote> postVotes) {
-        this.postVotes = postVotes;
-    }
+  public List<PostVote> getPostVotes() {
+    return postVotes;
+  }
 
-    public List<PostComment> getPostComments() {
-        return postComments;
-    }
+  public void setPostVotes(List<PostVote> postVotes) {
+    this.postVotes = postVotes;
+  }
 
-    public void setPostComments(List<PostComment> postComments) {
-        this.postComments = postComments;
-    }
+  public List<PostComment> getPostComments() {
+    return postComments;
+  }
+
+  public void setPostComments(List<PostComment> postComments) {
+    this.postComments = postComments;
+  }
 }

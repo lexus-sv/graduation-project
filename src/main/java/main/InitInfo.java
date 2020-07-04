@@ -7,13 +7,13 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class InitInfo{
+public class InitInfo {
 
-    private String title;
-    private String subtitle;
-    private String phone;
-    private String email;
-    private String copyright;
-    private String copyrightFrom;
+  private String title;
+  private String subtitle;
+  private String phone;
+  private String email;
+  private String copyright;
+  private String copyrightFrom;
 
 }

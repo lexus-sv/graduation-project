@@ -3,32 +3,33 @@ package main.api.auth.request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class LoginUserRequest {
-    @JsonProperty("e_mail")
-    private String email;
 
-    private String password;
+  @JsonProperty("e_mail")
+  private String email;
 
-    public LoginUserRequest() {
-    }
+  private String password;
 
-    public LoginUserRequest(String email, String password) {
-        this.email = email;
-        this.password = password;
-    }
+  public LoginUserRequest() {
+  }
 
-    public String getEmail() {
-        return email;
-    }
+  public LoginUserRequest(String email, String password) {
+    this.email = email;
+    this.password = password;
+  }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+  public String getEmail() {
+    return email;
+  }
 
-    public String getPassword() {
-        return password;
-    }
+  public void setEmail(String email) {
+    this.email = email;
+  }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+  public String getPassword() {
+    return password;
+  }
+
+  public void setPassword(String password) {
+    this.password = password;
+  }
 }

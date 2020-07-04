@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TagToPostRepository extends CrudRepository<TagToPost, Integer> {
+
 }

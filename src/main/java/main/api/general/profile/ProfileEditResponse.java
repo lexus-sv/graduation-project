@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class ProfileEditResponse {
-    private boolean result;
-    private ProfileErrors errors;
+
+  private boolean result;
+  private ProfileErrors errors;
 }

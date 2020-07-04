@@ -9,9 +9,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PasswordUserRequest {
-    private String code;
-    private String password;
-    private String captcha;
-    @JsonProperty("captcha_secret")
-    private String captchaSecret;
+
+  private String code;
+  private String password;
+  private String captcha;
+  @JsonProperty("captcha_secret")
+  private String captchaSecret;
 }

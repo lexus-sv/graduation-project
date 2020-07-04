@@ -8,5 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RestorePasswordRequest {
-    private String email;
+
+  private String email;
 }

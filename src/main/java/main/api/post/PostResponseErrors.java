@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class PostResponseErrors {
-    private String title;
-    private String text;
+
+  private String title;
+  private String text;
 }
