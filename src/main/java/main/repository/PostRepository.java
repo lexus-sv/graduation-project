@@ -50,7 +50,7 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
   @Query("select count(p) from Post p join TagToPost ttp on ttp.post.id=p.id join Tag t on t.id=ttp.tag.id where lower(t.name) like %?1% and p.active=true and p.moderationStatus=main.model.ModerationStatus.ACCEPTED")
   int countByTagName(String tagName);
 
-  @Query("select p from Post p where (p.moderationStatus=?2 and p.active=true) or (p.moderator=?1 and p.active=true and p.moderationStatus=?2)")
+  @Query("select p from Post p where (p.moderationStatus=?2 and p.active=true) or (p.moderator=?1 and p.active=true and p.moderationStatus=?2) order by p.time desc")
   Page<Post> findPostsForModeration(User moderator, ModerationStatus moderationStatus,
       Pageable pageable);
 

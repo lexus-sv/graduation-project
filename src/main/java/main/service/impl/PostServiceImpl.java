@@ -209,14 +209,13 @@ public class PostServiceImpl implements PostService {
 
     int textLength = request.getText().trim().length();
     int titleLength = request.getTitle().trim().length();
-    System.out.println(postTextLength + " " + postTitleLength);
     if (titleLength < postTitleLength) {
       response.setResult(false);
-      errors.setTitle("Заголовок должен быть не меньше" + postTitleLength + "символов");
+      errors.setTitle("Заголовок должен быть не меньше" + postTitleLength + " символов");
     }
     if (textLength < postTextLength) {
       response.setResult(false);
-      errors.setText("Текст поста должен быть не менее" + postTextLength + "символов");
+      errors.setText("Текст поста должен быть не менее" + postTextLength + " символов");
     }
     if (errors.getText() == null && errors.getTitle() == null) {
       response.setResult(true);
@@ -262,7 +261,7 @@ public class PostServiceImpl implements PostService {
       response.setResult(false);
       errors.setText("Текст поста должен быть не менее" + postTextLength + "символов");
     }
-    if (errors.getText() != null && errors.getTitle() != null) {
+    if (errors.getText() == null && errors.getTitle() == null) {
       response.setResult(true);
       Post post = postRepository.findById(id).orElse(null);
       post.setActive(request.isActive());

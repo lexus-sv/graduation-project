@@ -11,6 +11,7 @@ import main.api.post.tag.Tag;
 import main.api.post.tag.Tags;
 import main.api.user.UserFullInfo;
 import main.api.user.UserModelType;
+import main.model.ModerationStatus;
 import main.model.PostVote;
 import main.model.TagToPost;
 import org.jsoup.Jsoup;
@@ -156,7 +157,8 @@ public class ViewModelFactory {
     double size = 0;
     for (main.model.Tag tag : tags) {
       for (main.model.TagToPost ttp : tag.getTaggedPosts()) {
-        if (ttp.getPost().isActive()) {
+        if (ttp.getPost().isActive()
+            && ttp.getPost().getModerationStatus() == ModerationStatus.ACCEPTED) {
           size++;
         }
       }
@@ -165,15 +167,18 @@ public class ViewModelFactory {
     double maxWeight = tags.stream()
         .map(tag -> tag.getTaggedPosts().stream()
             .map(TagToPost::getPost)
-            .filter(main.model.Post::isActive)
+            .filter(
+                post -> post.isActive() && post.getModerationStatus() == ModerationStatus.ACCEPTED)
             .count())
-        .map(weight-> weight / finalSize)
+        .map(weight -> weight / finalSize)
         .max(Double::compare)
         .orElse(0.0);
     tags.forEach(
         tag -> formattedTags.add(new Tag(tag.getName(),
             ((double) tag.getTaggedPosts().stream()
-            .filter(ttp -> ttp.getPost().isActive()).count() / finalSize) / maxWeight)));
+                .filter(ttp -> ttp.getPost().isActive()
+                    && ttp.getPost().getModerationStatus() == ModerationStatus.ACCEPTED).count()
+                / finalSize) / maxWeight)));
     return new Tags(formattedTags);
   }
 
